@@ -1,52 +1,42 @@
-# Prerequisites
-*.d
+# General ignore list
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# Mac/OSX
+.DS_Store
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# Common credential files
+**/credentials.json
+**/client_secrets.json
+**/client_secret.json
+*pass*
+*password*
+*creds*
+credentials.yml
 
-# Precompiled Headers
-*.gch
-*.pch
+# Log files
+*.log
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
+# Exclude all Executables & Binaries
+*.tar
+*.zip
+*.gzip
+*.tgz
+*.bin
+*.jar
 *.exe
 *.out
 *.app
-*.i*86
-*.x86_64
-*.hex
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Vim swap files
+*.swp
+*.swo
+[._]*.un~
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Ansible ignore list
+# Ansible runtime and backups
+*.original
+*.tmp
+*.bkp
+*.retry
+*.*~
+
+
