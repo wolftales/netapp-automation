@@ -1,4 +1,4 @@
-# Certificate Authentication - SSL Certs
+# ONTAP Certificate Authentication - SSL Certs
 
 ### Create SSL Cert for admin
 `openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout admin.key -out admin.pem -subj “/C=US/ST=NC/L=RTP/O=NetApp/CN=admin”`

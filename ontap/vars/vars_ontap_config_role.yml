@@ -1,0 +1,84 @@
+###
+#  Ansible vars file sample for role configuration varibles: basic VSIM with ONTAP standard cluster & vserver config
+#  Note:  Supports 2 X ONTAP VSIMs within a single cluster. 
+#  Each has:
+#     6 X network ports (default)
+#     28 disks
+###
+
+###
+# Role-Based Configuration: Cluster
+###
+
+license_codes: "{{ licenses | default([ vsim_license_codes ]) }}"
+
+disks:  # disks module assigns all visible disks to a node. This may be done during Day 0 Installation process
+- "{{ clus.name }}-01"
+- "{{ clus.name }}-02"
+
+dns:    # Set DNS for Cluster
+- { dns_domains: "{{ dns_domain }}", dns_nameservers: "{{ dns_srvrs }}" }
+
+ntp:    # Set NTP Server (requires the cluster to have DNS set)
+- { server_name: "{{ time }}", version: auto }
+
+aggrs:  # Create one or more Aggregates.
+- { name: "{{ clus.aggr }}_01_aggr1", node: "{{ clus.name }}-01", disk_count: "{{ raid.count }}", max_raid: "{{ raid.size }}" }
+- { name: "{{ clus.aggr }}_02_aggr1", node: "{{ clus.name }}-02", disk_count: "{{ raid.count }}", max_raid: "{{ raid.size }}" }
+
+ports:  # Set MTU for ports
+- { node: "{{ clus.name }}-01", port: e0d, mtu: 1500, flowcontrol: none }
+- { node: "{{ clus.name }}-01", port: e0e, mtu: 1500, flowcontrol: none }
+- { node: "{{ clus.name }}-01", port: e0f, mtu: 1500, flowcontrol: none }
+- { node: "{{ clus.name }}-02", port: e0d, mtu: 1500, flowcontrol: none }
+- { node: "{{ clus.name }}-02", port: e0e, mtu: 1500, flowcontrol: none }
+- { node: "{{ clus.name }}-02", port: e0f, mtu: 1500, flowcontrol: none }
+
+ifgrps:  # Create and add ports to Interface Groups.
+- { name: a0a, node: "{{ clus.name }}-01", ports: "{{ ifgrp_ports }}", mode: multimode_lacp, mtu: 1500 }
+- { name: a0a, node: "{{ clus.name }}-02", ports: "{{ ifgrp_ports }}", mode: multimode_lacp, mtu: 1500 }
+
+vlans:  # Create vlans on LIFS
+# - { id: "{{ vlan_id }}", node: "{{ cluster }}-01", parent: a0a }
+# - { id: "{{ vlan_id }}", node: "{{ cluster }}-02", parent: a0a }
+
+bcasts:  # Create Broadcast domains
+- { name: "{{ bd.nas }}", mtu: 1500, ipspace: default,
+    ports: "{{ clus.name }}-01:a0a,{{ clus.name }}-01:e0e,{{ clus.name }}-02:a0a,{{ clus.name }}-02:e0e" }
+# - { name: "{{ bd.mgmt }}", mtu: 1500, ipspace: default,
+#     ports: '{{ clus.name }}-01:e0M,{{ clus.name }}-02:e0M' }
+- { name: "{{ bd.mgmt }}", mtu: 1500, ipspace: default,
+    ports: '{{ clus.name }}-01:e0c,{{ clus.name }}-01:e0d,{{ clus.name }}-02:e0c,{{ clus.name }}-02:e0d' }
+
+
+inters: # Create intercluster lifs for SnapMirror.
+- { name: "{{ clus.name }}-01_icl1", address: "{{ node1.icl.ip }}", netmask: "{{ clus.netmask }}",
+    node: "{{ clus.name }}-01", port: e0d }
+- { name: "{{ clus.name }}-02_icl2", address: "{{ node2.icl.ip }}", netmask: "{{ clus.netmask }}",
+    node: "{{ clus.name }}-02", port: e0d }
+
+
+###
+# Role-Based Configuration: Vserver (SVM)
+###
+
+vservers:  # Vservers to create # aggr_list is optional.  If not specified, defaults to all aggregates.
+- { name: "{{ svm.name }}", aggr: "{{ clus.aggr }}_01_aggr1", protocol: "{{ svm.protocol }}", root: "{{ svm.root }}",
+    aggr_list: "{{ svm.aggrs }}" }
+
+vserver_dns:  # DNS at the Vserver level
+- { vserver: "{{ svm.name }}", dns_domains: "{{ svm.dns_domain }}", dns_nameservers: "{{ svm.dns_srvrs }}" }
+# - { vserver: "{{ svm }}", dns_domains: example.com, dns_nameservers: 8.8.8.8 }  # incase no DNS is available locally
+
+lifs:  # interfaces for the Vservers being created
+- { name: "{{ svm.name }}_data1", vserver: "{{ svm.name }}", node: "{{ clus.name }}-01", port: e0e, protocol: "{{ svm.protocol }}",
+    address: "{{ node1.svm_lif1.ip }}", netmask: "{{ svm.netmask }}" }
+- { name: "{{ svm.name }}_data2", vserver: "{{ svm.name }}", node: "{{ clus.name }}-02", port: e0e, protocol: "{{ svm.protocol }}",
+    address: "{{ node2.svm_lif1.ip }}", netmask: "{{ svm.netmask }}" }
+
+gateway:  # To configure the default route/gateway for the vservers
+- { vserver: "{{ svm.name }}", destination: 0.0.0.0/0, gateway: "{{ svm.gateway }}" }
+
+cifs: # Vservers to join to an AD Domain
+  - { vserver: "{{ svm.name }}", cifs_server_name: sandbox, domain: "{{ svm.dns_domain }}", force: true }
+ 
