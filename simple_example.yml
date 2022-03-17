@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+  name: Basic Connectivity Test
+  gather_facts: false
+  collections:
+    - netapp.ontap
+
+  vars:
+    login: &login
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+  vars_files:
+    - vars_files.yml
+  vars_prompt:
+    - name: "netapp_password"
+      prompt: "Enter the NetApp Admin Password"
+      private: yes
+
+  tasks:
+  - name: 'Connectivity Test & Display ONTAP_info: All'
+    netapp.ontap.na_ontap_info:
+      state: info
+      # hostname: "{{ netapp_hostname }}"
+      # username: "{{ netapp_username }}"
+      # password: "{{ netapp_password }}"
+      # https: true
+      # validate_certs: false
+      <<: *login
+    register: ontap_info
+  - debug:
+        msg: "{{ ontap_info.ontap_info }}"

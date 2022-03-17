@@ -1,6 +1,6 @@
 ###
-#  Ansible identity vars file for 'redshirt'
-#  
+#  Ansible identity vars file for 'sandbox'
+#  Advanced ONTAP configuration varible set
 ###
 
 ###
@@ -43,19 +43,12 @@ clus:
     # time:             time.windows.com
 
     ifgrp: 
-      name:         a0a
-      ports:        e0f
+      name:         a0a         # IFGPR Interface name to be created
+      ports:        e0f         # Member interfaces to build IFGPR
 
     vlans:
-      vlan_id:      42
+      vlan_id:      42          # VLAN ID for fongiuring VLAN Tagging
   
-
-svm:
-  name:           "{{ vserver }}"
-  netmask:        "{{ clus.net.netmask }}"
-  gateway:        "{{ clus.net.gateway }}"
-  dns_domain:     "{{ clus.net.dns_domain | default('example.local') }}"  # Replace with IP if not the same as cluster
-  dns_srvr:       "{{ clus.net.dns_srvr | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
 
 # Node & SVM Network IP address Information
 node1:
@@ -87,6 +80,13 @@ node2:
     netmask:      "{{ clus.netmask }}"
     gateway:      "{{ clus.gateway }}"
 
+# SVM Network IP address Information
+svm:
+  name:           "{{ vserver }}"
+  netmask:        "{{ clus.net.netmask }}"
+  gateway:        "{{ clus.net.gateway }}"
+  dns_domain:     "{{ clus.net.dns_domain | default('example.local') }}"  # Replace with IP if not the same as cluster
+  dns_srvr:       "{{ clus.net.dns_srvr | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
 
 # Authentification Defaults
 netapp_hostname:  "{{ clus.mgmt }}"
