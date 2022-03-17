@@ -37,7 +37,7 @@ credentials.yml
 *.original
 *.tmp
 *.bkp
-*.retry
+*.retry 
 *.*~
 
 
