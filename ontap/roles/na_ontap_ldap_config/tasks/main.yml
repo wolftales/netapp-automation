@@ -1,0 +1,71 @@
+---
+- name: Setup LDAP Client Config (LDAP CLIENT CONFIG)
+  netapp.ontap.na_ontap_ldap_client:
+    state:        present
+    vserver:      "{{ item.svm }}"
+    name:         "{{ item.config_name }}"
+    ad_domain:    "{{ item.ad_domain | default(omit) }}"
+    ldap_servers: "{{ item.ldap_servers | default(omit) }}"  # comma seperated list
+    schema:       "{{ item.schema }}"
+    tcp_port:     "{{ item.port | default(389)  }}"  # Error "Extra input: port"
+    query_timeout: "{{ item.query_timeout }}"
+    min_bind_level: "{{ item.min_bind_level }}"
+    use_start_tls: "{{ item.use_start_tls }}"
+    session_security: "{{ item.session_security }}"
+    base_dn:      "{{ item.base_dn }}"
+    base_scope:   "{{ item.base_scope }}"
+    bind_dn:      "{{ item.bind_dn }}"
+    bind_password: "{{ item.bind_password }}"
+    hostname:     "{{ netapp_hostname }}"
+    username:     "{{ netapp_username }}"
+    password:     "{{ netapp_password }}"
+    https: true
+    validate_certs: "{{ validate_certs }}"
+
+  with_items: "{{ ldap_config }}"
+  when: ldap_config is defined and ldap_config != None
+
+- name: Create LDAP Config (LDAP CONFIG)
+  netapp.ontap.na_ontap_ldap:
+    state:      present
+    vserver:    "{{ item.svm }}"
+    name:       "{{ item.config_name }}"
+
+    hostname:   "{{ netapp_hostname }}"
+    username:   "{{ netapp_username }}"
+    password:   "{{ netapp_password }}"
+    https: true
+    validate_certs: "{{ validate_certs }}"
+
+  with_items: "{{ ldap_config }}"
+  when: ldap_config is defined and ldap_config != None
+
+- name: Modify LDAP Client Config (Set User, Group, Netgroup DN)
+  netapp.ontap.na_ontap_command:
+#    ontapi:     "{{ netapp.ontap_info.ontap_version }}"
+    command:    "{{ item.command }}"
+
+    hostname:   "{{ netapp_hostname }}"
+    username:   "{{ netapp_username }}"
+    password:   "{{ netapp_password }}"
+    https: true
+    validate_certs: "{{ validate_certs }}"
+
+  with_items: "{{ ldap_client_config }}"
+  when: ldap_client_config is defined and ldap_client_config != None
+
+- name: create name service database
+  netapp.ontap.na_ontap_name_service_switch:
+    state:        present
+    vserver:      "{{ item.svm }}"
+    database_type: "{{ item.db_type }}"
+    sources:      "{{ item.sources }}"
+
+    hostname:     "{{ netapp_hostname }}"
+    username:     "{{ netapp_username }}"
+    password:     "{{ netapp_password }}"
+    https: true
+    validate_certs: "{{ validate_certs }}"
+
+  with_items: "{{ nss_config }}"
+  when: nss_config is defined and nss_config != None

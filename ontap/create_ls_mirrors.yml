@@ -1,0 +1,29 @@
+---
+- name: "ONTAP SVM : {{ vserver }} Create LS Mirrors"
+  hosts: localhost
+  gather_facts: false
+  collections:
+  - netapp.ontap
+  
+  vars_files:
+  - vars_hmts-cacal2-na01_a220.yml
+  vars_prompt:  # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin' username (deafult = 'admin')
+    - name: netapp_password
+      prompt: NetApp 'admin' password
+      private: true
+  vars:
+    # netapp_password: 
+
+  tasks:
+
+###
+  # Role: Create LS Mirrors for SVM
+  ###
+
+  ###
+  # SVM LS Mirror Configuration
+  - name: "ONTAP SVM: {{ svm.name }} Create LS Mirrors for SVM"
+    include_role:
+      name: na_ontap_create_ls_mirrors

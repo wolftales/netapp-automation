@@ -15,12 +15,10 @@ bd:
 # Broadcast-domain split: Active Management ports
 bcd:
   split_ports:
-  # - origin_bd:    Default
-  #   new_bd:       "{{ bd.mgmt }}"
-  #   ports:        '["{{ cluster }}-01:e0M", "{{ cluster }}-02:e0M"]'
-  - origin_bd:  Default
+  - old_bd:  Default
     new_bd:     "{{ bd.mgmt }}"
     ports:      '["{{ clus.name }}-01:e0c", "{{ clus.name }}-02:e0c"]'
+    #   ports:        '["{{ cluster }}-01:e0M", "{{ cluster }}-02:e0M"]'
 
 
 ###
@@ -33,8 +31,8 @@ asup:
   noteto:       admin@example.local
   mailhosts:    192.168.7.3
   hostsubj:     true
-  to:           'netapp_admin@{{ dns_domain }}'
-  from:         '{{ clus.name }}@{{ dns_domain }}'
+  to:           'netapp_admin@{{ clus.net.dns.domain }}'
+  from:         '{{ clus.name }}@{{ clus.net.dns.domain }}'
   partner:
 
   # Node Specific Config parameters - node list
@@ -57,28 +55,6 @@ asup_config:
   to:         '{{ asup.to }}'
   noteto:     '{{ asup.noteto }}'
   partner:    '{{ asup.partner }}'
-
-
-###
-# SVM Configuration Settings
-svm_name:     "{{ vserver }}"
-svm:            
-  name:         "{{ svm_name }}"
-  root:         "{{ svm_name | replace('-','_') }}"
-  aggrs:        "{{ clus.aggr }}_01_aggr1,{{ clus.aggr }}_02_aggr1"
-  dns_domain:   "{{ svm.dns_domain }}"
-  dns_srvrs:    "{{ dns_srvrs }}"
-  netmask:      "{{ svm.netmask }}"    # Replace with IP if not the same
-  gateway:      "{{ svm.gateway }}"    # Replace with IP if not the same
-  aggr_list:    '[  ]'
-  protocol:     nfs
-  # export_policy:
-  # - name:  'Data'
-  #   client_match:
-  #   index:
-  #   ro_rule:
-  #   rw_rule:
-  #   super_user_security:
 
 
 ###

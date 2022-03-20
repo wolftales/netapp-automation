@@ -1,0 +1,5 @@
+---
+# default varibles for ls-mirror role
+vserver:
+aggr_list: []
+node_list: []

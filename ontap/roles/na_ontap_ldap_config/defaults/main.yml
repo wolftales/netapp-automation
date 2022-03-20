@@ -1,0 +1,16 @@
+---
+# LDAP Configuration
+ldap_config:
+- { svm: '{{ svm }}', config_name: '{{ ldap_configname }}', ad_domain: '{{ ad_domain }}', schema: '{{ ldap_schema }}', port: '{{ ldap_port }}', query_timeout: '{{ ldap_query_timeout }}', min_bind_level: '{{ ldap_min_bind_level }}', use_start_tls: '{{ ldap_use_start_tls }}', session_security: '{{ldap_session_security }}' , base_dn: '{{ ldap_base_dn }}', base_scope: '{{ ldap_base_scope }}', bind_dn: '{{ ldap_bind_dn }}' }
+
+# LDAP Client-User, Group, Netgroup DN Config
+ldap_client_config:
+- { command: 'ldap client modify modify -vserver {{ svm }} -client-config {{ ldap_configname }} -ad-domain {{ ldap_ad_domain }} -user-dn {{ svm_ldap_user_dn }} -group-dn {{ svm_ldap_group_dn }} -netgroup-dn {{ svm_ldap_netgroup_dn }}' }
+
+# LDAP NSS Configuration
+nss_config:
+- { svm: '{{ svm }}', db_type: namedb, sources: 'files,ldap' }
+- { svm: '{{ svm }}', db_type: hosts, sources: 'files,ldap' }
+- { svm: '{{ svm }}', db_type: group, sources: 'files,ldap' }
+- { svm: '{{ svm }}', db_type: passwd, sources: 'files,ldap' }
+- { svm: '{{ svm }}', db_type: netgroup, sources: 'files,ldap' }
