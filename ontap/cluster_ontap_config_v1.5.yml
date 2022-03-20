@@ -21,7 +21,7 @@
 #   - clusters and vservers with dashes in the name break some vanella automation (aggr & volume names can not contain dashes)
 #   - Users & Role config needs to be confirmed or adapted
 #   - Sensative credentials should leverage var_prompt, uncomment those lines in the playbook
-# 
+#   - LS Mirror role can only be run once - It isn't idempotent
 # 
 ####
 
