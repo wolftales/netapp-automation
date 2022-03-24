@@ -100,9 +100,9 @@
   
   ###
   # Vserver configuration
-  # - name: ONTAP Vserver Configuration
-  #   include_role:
-  #     name: na_ontap_create_ls_mirrors
+  - name: ONTAP Vserver Configuration
+    include_role:
+      name: na_ontap_create_ls_mirrors
 
   ###
   # Non-Role: Standard Configuration

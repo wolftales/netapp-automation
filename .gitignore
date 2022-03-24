@@ -1,4 +1,8 @@
 # General ignore list
+files/ONTAP/*
+files/StorageGRID/*
+vars/vars_vcenter_exampleLab.yml
+*_exampleLab.yml
 
 # Mac/OSX
 .DS_Store
@@ -12,6 +16,7 @@
 *password*
 *creds*
 credentials.yml
+
 
 # Log files
 *.log
