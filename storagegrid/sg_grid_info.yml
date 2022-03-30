@@ -1,0 +1,60 @@
+---
+- hosts: localhost
+  name: "Get GRID Info"
+  gather_facts: no
+  collections:
+  - netapp.storagegrid
+  vars_files:
+  - vars/vars_storagegrid_sg.yml
+  vars:
+    input_grid: &input_grid
+      api_url:                 "{{ grid_admin_base_url }}"
+      auth_token:              "{{ auth_response.json.data }}"
+      validate_certs:          false
+
+  tasks:
+
+  - name: Get GRID authorization token
+    uri:
+      url:                     "{{ grid_admin_base_url }}/api/v3/authorize"
+      method:                  POST
+      validate_certs:          false
+      body_format:             json
+      body: {
+        "username":            "{{ grid_admin_username }}",
+        "password":            "{{ grid_admin_password }}",
+        "cookie":              false,
+        "csrfToken":           false
+      }
+    register: auth_response
+
+  - name: Get Grid INFO
+    netapp.storagegrid.na_sg_grid_info:
+      gather_subset:
+      - all
+      # - grid_health_topology_info
+      # - grid_config_product_version_info
+      <<: *input_grid
+    register: grid_info_results
+
+  # - name: Print GRID details
+  #   debug:
+  #     msg:
+  #     - "Name:               {{ grid_info_results.sg_info['grid/health/topology'].data.name }}"
+  #     - "Version:            {{ grid_info_results.sg_info['grid/config/product-version'].data.productVersion }}"
+
+  # - name: Print GRID nodes
+  #   debug:
+  #     msg:
+  #     - "Data Center:        {{ item.0.name }}"
+  #     - "Node Name:          {{ item.1.name }}"
+  #     - "Node Type:          {{ item.1.type }}"
+  #   with_subelements:
+  #   - "{{ grid_info_results.sg_info['grid/health/topology'].data.children }}"
+  #   - children
+  #   loop_control:
+  #     label: "{{ item.0.name }} - {{ item.1.name }}"
+
+  - name: Print GRID details - All
+    debug:
+      var: grid_info_results

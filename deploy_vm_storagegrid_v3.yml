@@ -10,9 +10,7 @@
 # ansible-galaxy role install -f -p ./roles git+https://github.com/madlabber/deploy_ovf_storagegrid.git,main
 # 
 # Known limitations:
-#   -  Second node comes through with broadcast domains messed up if cluster and data ports
-#      are visible to one another.
-#   - Adjust broadcast domain membership after running, and before additional configuration 
+#   -  xxx
 ###
 ---
 - name: Build StorageGrid from OVA
@@ -24,7 +22,8 @@
   - vars/vars_storagegrid_exampleLab.yml
   vars:
     ovf_version:            "11.6.0"
-    ovf_location:           "{{ ovf_location | default('{{playbook_dir}}/files/StorageGRID/StorageGRID-Webscale-{{ovf_version}}/vsphere') }}"
+    # ovf_location:           "{{ ovf_location | default('{{playbook_dir}}/files/StorageGRID/StorageGRID-Webscale-{{ovf_version}}/vsphere') }}"
+    ovf_location:           "files/StorageGRID/StorageGRID-Webscale-{{ovf_version}}/vsphere"
     admin_ip:               "{{ sg.admin_ip }}"
     grid_network_name:      "{{ sg.grid_network_name }}"
     grid_network_config:    "{{ sg.grid_network_config }}"
