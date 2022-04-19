@@ -39,3 +39,8 @@ pip list | grep ansible
 pip list | grep netapp-lib
 ansible-galaxy collection list | grep netapp
 ```
+
+### Updating pip & pip packages
+
+`sudo python -m pip install --upgrade pip`
+`sudo pip install --upgrade netapp-lib`

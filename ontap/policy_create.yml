@@ -1,0 +1,95 @@
+################################################################################
+#
+#   Author      :   Ken Hillier
+#   Date        :   21 June 2021
+#
+#   Description :   Workflow to create various policy to support volume creation
+#
+#   Dependencies: netapp.ontap collection
+#
+################################################################################
+---
+- hosts:                localhost
+  name:                 Various Policy Creation Workflow
+  gather_facts:         false
+  collections:
+    -                   ansible.builtin
+    -                   netapp.ontap
+  vars:
+    login: &login
+      hostname:         "{{ netapp_hostname }}"
+      username:         "{{ netapp_username }}"
+      password:         "{{ netapp_password }}"
+      https:            "{{ netapp_https }}"
+      validate_certs:   "{{ netapp_validate_certs }}"
+    state:              present
+
+  vars_files:
+    - vars/vars_ontap_sandbox.yml
+    - vars_policy_create.yml
+
+  pre_tasks:
+    #---------------------------------------------------------------------------
+    # PRE VALIDATION STEPS:
+    #  - Attempting to mimic as much of WFA controls as possible
+    #  - This performs the minimum possible validation against inputs
+    #---------------------------------------------------------------------------
+  - name:                       "Asserting mandatory storage details are defined properly"
+    assert:
+      that:
+        -                       netapp_hostname is defined
+        -                       netapp_username is defined
+        -                       netapp_password is defined
+        -                       netapp_https is defined
+        -                       netapp_validate_certs is defined
+        -                       vserver is defined
+      fail_msg:                 "One or more variables are missing from submission"
+
+
+  tasks:
+
+  # Creating policy dependancies for the volume creation process
+  - name: create qos policy group
+    na_ontap_qos_policy_group:
+      <<: *login
+      state: "{{ state }}"
+
+      name: "{{ item.name }}"
+      vserver: "{{ item.vserver }}"
+      max_throughput: "{{ item.max | default(omit) }}"
+      min_throughput: "{{ item.min | default(omit) }}"
+
+    loop: "{{ qos_policies }}"
+
+  - name: Create Export Policy
+    na_ontap_export_policy:
+      <<: *login
+      state: "{{ state }}"
+
+      name: "{{ item.name }}"
+      vserver: "{{ item.vserver }}"
+
+    loop: "{{ export_policies }}"
+
+  - name: Create Snapshot policy
+    na_ontap_snapshot_policy:
+      <<: *login
+      state: "{{ state }}"
+
+      name: "{{ item.name }}"
+      schedule: "{{ item.sched }}"
+      prefix: "{{ item.prefix | default(omit) }}"
+      count: "{{ item.count }}"
+      enabled: "{{ item.enabled }}"
+
+    loop: "{{ snap_policies }}"
+
+  # Quota Policy create - This should be part of a standard policy configuration in the future
+  - name: 'Create "Default" quota policy for new volumes based on the  {{ type }} template'
+    na_ontap_quota_policy:
+      <<: *login
+
+      state:      "{{ state }}"
+
+      vserver:    "{{ vserver }}"
+      name:       "default"

@@ -1,14 +1,16 @@
 ---
 - hosts: localhost
-  name: Basic Connectivity Test
+  name: Snapshot Policy Management
   gather_facts: false
   collections:
     - netapp.ontap
 
-  # Varible precedence: vars < vars_prompts < vaars_files
   vars:
     netapp_hostname:  192.168.7.200
     netapp_username:  admin
+
+    ss_policy:
+
     login: &login
       hostname: "{{ netapp_hostname }}"
       username: "{{ netapp_username }}"
@@ -23,24 +25,18 @@
   #   - vars_files.yml
 
   tasks:
-  - name: 'Connectivity Test & Display ONTAP_info: All'
-    netapp.ontap.na_ontap_info:
-      # state: info  # Deprecated
-      # YAML 
-      # hostname: "{{ netapp_hostname }}"
-      # username: "{{ netapp_username }}"
-      # password: "{{ netapp_password }}"
-      # https: true
-      # validate_certs: false
-      gather_subset:  
-      - all
-        # - volume_info
-        # - lun_info
-        # - snapshot_policy_info
-        # - ontap_system_version
-        # - ontap_version
+
+  - name: Create Snapshot policy with multiple schedules
+    na_ontap_snapshot_policy:
+      state: present
+      name: ansible2
+      schedule: ['hourly', 'daily', 'weekly', 'monthly', '5min']
+      prefix: ['hourly', 'daily', 'weekly', 'monthly', '5min']
+      count: [1, 2, 3, 4, 5]
+      enabled: True
+
       <<: *login
-    register: ontap_info
+    # register: ontap_info
 
   - name: Display Captured info
     debug:
