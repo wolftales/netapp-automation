@@ -1,0 +1,51 @@
+---
+- hosts: localhost
+  name: REST CLI Test
+  gather_facts: false
+  collections:
+    - netapp.ontap
+
+  # Varible precedence: vars < vars_prompts < vaars_files
+  vars:
+    netapp_hostname:  192.168.7.200
+    netapp_username:  admin
+    netapp_password:  netapp1234
+    login: &login
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+  # vars_prompt:
+  #   - name: "netapp_password"
+  #     prompt: "Enter the NetApp Admin Password"
+  #     private: yes
+  # vars_files:
+  #   - vars_files.yml
+
+  tasks:
+  - name: 'ONTAP REST CLI Test: version'
+    netapp.ontap.na_ontap_rest_cli:
+      <<: *login
+
+      command: 'version'
+      verb: 'GET'
+      
+    register: rest_info
+
+  - name: Display Captured info
+    debug:
+        msg: "{{ rest_info }}"
+
+  - name: 'ONTAP REST CLI Test: system show'
+    netapp.ontap.na_ontap_rest_cli:
+      <<: *login
+      
+      command: 'cluster/show'
+      verb: 'GET'
+      
+    register: rest_info
+
+  - name: Display Captured info
+    debug:
+        msg: "{{ rest_info }}"
