@@ -173,6 +173,7 @@
     policy_name: default
     vserver: "{{ item.name }}"
     client_match: 0.0.0.0/0
+    rule_index: "{{ item.rule_index | default('1') }}"
     ro_rule: any
     rw_rule: none
     protocol: any

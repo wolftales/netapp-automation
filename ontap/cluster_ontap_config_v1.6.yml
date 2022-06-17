@@ -16,7 +16,8 @@
 #   - 1.3 13 Jul 21 - Streamlined varibles to accept more dynamic network configs
 #   - 1.4 08 Nov 21 - Validated against vanilla roles except for Load-sharing Mirror role
 #   - 1.5 18 Mar 22 - Validated against ONTAP 9.10.1, updated varible nesting, staged CIFS config 
-# 
+#   - 1.6 12 Jun 22 - Validated against ONTAP 9.10.1, updated varible nesting, staged CIFS config 
+#
 # Known restrictions:
 #   - clusters and vservers with dashes in the name break some vanella automation (aggr & volume names can not contain dashes)
 #   - Users & Role config needs to be confirmed or adapted
@@ -52,8 +53,8 @@
   #     private: true
   #     unsafe: false
   vars_files:
-  - vars/vars_ontap_sandbox.yml
-  - vars/vars_ontap_config_sandbox.yml
+  - vars/vars_ontap_redshirt.yml
+  - vars/vars_ontap_config_vsim.yml
   - vars/vars_ontap_config_role.yml
   - vars/vars_vsim_licenses.yml
 
@@ -88,15 +89,15 @@
   # Cluster Configuration
   - name: ONTAP Cluster Standard Configuration
     include_role:
-      name: na_ontap_cluster_config
-      # name: na_ontap_cluster_config_v2
+      # name: na_ontap_cluster_config
+      name: na_ontap_cluster_config_v3
 
   ###
   # Vserver configuration
   - name: ONTAP Vserver Configuration
     include_role:
-      name: na_ontap_vserver_create
-      # name: na_ontap_vserver_create_v2
+      # name: na_ontap_vserver_create
+      name: na_ontap_vserver_create_v2
   
   ###
   # Vserver configuration

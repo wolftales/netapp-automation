@@ -15,7 +15,7 @@ bd:
 # Broadcast-domain split: Active Management ports
 bcd:
   split_ports:
-  - old_bd:  Default
+  - old_bd:     Default
     new_bd:     "{{ bd.mgmt }}"
     ports:      '["{{ clus.name }}-01:e0c", "{{ clus.name }}-02:e0c"]'
     #   ports:        '["{{ cluster }}-01:e0M", "{{ cluster }}-02:e0M"]'
@@ -33,28 +33,28 @@ asup:
   hostsubj:     true
   to:           'netapp_admin@{{ clus.net.dns.domain }}'
   from:         '{{ clus.name }}@{{ clus.net.dns.domain }}'
-  partner:
+  partner:      ''
 
   # Node Specific Config parameters - node list
 asup_config:
-- node:       '{{ clus.name }}-01'
-  proxy_url:  '{{ asup.proxy_url }}'
-  transport:  '{{ asup.transport }}'
-  mailhosts:  '{{ asup.mailhosts }}'
-  hostsubj:   '{{ asup.hostsubj }}'
-  from:       '{{ asup.from }}'
-  to:         '{{ asup.to }}'
-  noteto:     '{{ asup.noteto }}'
-  partner:    '{{ asup.partner }}'
-- node:       '{{ clus.name }}-02'
-  proxy_url:  '{{ asup.proxy_url }}'
-  transport:  '{{ asup.transport }}'
-  mailhosts:  '{{ asup.mailhosts }}'
-  hostsubj:   '{{ asup.hostsubj }}'
-  from:       '{{ asup.from }}'
-  to:         '{{ asup.to }}'
-  noteto:     '{{ asup.noteto }}'
-  partner:    '{{ asup.partner }}'
+# - node:       '{{ clus.name }}-01'
+#   proxy_url:  '{{ asup.proxy_url }}'
+#   transport:  '{{ asup.transport }}'
+#   mailhosts:  '{{ asup.mailhosts }}'
+#   hostsubj:   '{{ asup.hostsubj }}'
+#   from:       '{{ asup.from }}'
+#   to:         '{{ asup.to }}'
+#   noteto:     '{{ asup.noteto }}'
+#   partner:    '{{ asup.partner }}'
+# - node:       '{{ clus.name }}-02'
+#   proxy_url:  '{{ asup.proxy_url }}'
+#   transport:  '{{ asup.transport }}'
+#   mailhosts:  '{{ asup.mailhosts }}'
+#   hostsubj:   '{{ asup.hostsubj }}'
+#   from:       '{{ asup.from }}'
+#   to:         '{{ asup.to }}'
+#   noteto:     '{{ asup.noteto }}'
+#   partner:    '{{ asup.partner }}'
 
 
 ###
@@ -93,10 +93,10 @@ svm_export_policy_name:
 - { svm: "{{ svm.name }}", name: 'Data' }
 
 export_policy_rules_list:
-- { name: 'default', svm: "{{ svm.name }}", client_match: '192.168.7.122', protocol: nfs, ro_rule: 'sys', rw_rule: 'sys', super_user_security: 'sys' }
-- { name: 'default', svm: "{{ svm.name }}", client_match: '192.168.7.0/24', protocol: any, ro_rule: 'any', rw_rule: 'none', super_user_security: 'none' }
-- { name: 'Data', svm: "{{ svm.name }}", client_match: '192.168.7.0/24', protocol: nfs, ro_rule: 'any', rw_rule: 'any', super_user_security: 'sys' }
-- { name: 'Data', svm: "{{ svm.name }}", client_match: '0.0.0.0/0', protocol: nfs, ro_rule: 'any', rw_rule: 'none', super_user_security: 'none' }
+- { name: 'default', svm: "{{ svm.name }}", client_match: '192.168.7.125', rule_index: 1, protocol: nfs, ro_rule: 'sys', rw_rule: 'sys', super_user_security: 'sys' }
+- { name: 'default', svm: "{{ svm.name }}", client_match: '192.168.7.0/24', rule_index: 2, protocol: any, ro_rule: 'any', rw_rule: 'none', super_user_security: 'none' }
+- { name: 'Data', svm: "{{ svm.name }}", client_match: '192.168.7.0/24', rule_index: 1, protocol: nfs, ro_rule: 'any', rw_rule: 'any', super_user_security: 'sys' }
+- { name: 'Data', svm: "{{ svm.name }}", client_match: '0.0.0.0/0', rule_index: 2, protocol: nfs, ro_rule: 'any', rw_rule: 'none', super_user_security: 'none' }
 
 ###
 # LS Mirrors

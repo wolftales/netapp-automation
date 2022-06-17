@@ -7,7 +7,7 @@
 
   # Varible precedence: vars < vars_prompts < vaars_files
   vars:
-    netapp_hostname:  192.168.7.200
+    netapp_hostname:  192.168.7.240
     netapp_username:  admin
     netapp_password:  netapp1234
     login: &login

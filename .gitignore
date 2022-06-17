@@ -6,6 +6,7 @@ files/StorageGRID/*
 vars/vars_vcenter_exampleLab.yml
 *_exampleLab.yml
 *_sandbox.yml
+*_redshirt.yml
 
 # Mac/OSX
 .DS_Store
