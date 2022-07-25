@@ -53,7 +53,8 @@
   #     private: true
   #     unsafe: false
   vars_files:
-  - vars/vars_ontap_redshirt.yml
+  # - vars/vars_ontap_redshirt.yml
+  - vars/vars_ontap_sandbox.yml
   - vars/vars_ontap_config_vsim.yml
   - vars/vars_ontap_config_role.yml
   - vars/vars_vsim_licenses.yml
