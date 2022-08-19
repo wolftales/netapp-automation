@@ -15,8 +15,8 @@
   vars:
     # aggr_type: ssd                      # AFF, or flash-based aggrs
     aggr_type: hdd                      # FAS, non-flash
-    used_cap: 80
-    size: 1
+    used_cap: 80                        # Aggr % utilization threshold
+    size: 1                             # Space available in TB
     netapp_hostname: 192.168.7.200
     netapp_username: admin
     netapp_password: netapp1234
