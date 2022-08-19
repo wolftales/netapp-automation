@@ -8,6 +8,10 @@ vars/vars_vcenter_exampleLab.yml
 *_exampleLab.yml
 *_sandbox.yml
 *_redshirt.yml
+*vars/vars_*.yml
+deploy vms/vars*
+ontap/vars/*
+storagegrid/vars/*
 
 # Mac/OSX
 .DS_Store
