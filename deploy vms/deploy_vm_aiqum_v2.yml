@@ -7,7 +7,7 @@
 
   vars:
     ovf_version:        "9.11.1"
-    ovf_file:           "files/AIQUM/ActiveIQUnifiedManager-{{ ovf_version }}.ova"
+    ovf_file:           "../files/AIQUM/ActiveIQUnifiedManager-{{ ovf_version }}.ova"
     vcenter_address:    vcenter.demo.lab
     vcenter_username:   administrator@vsphere.local
     vcenter_password:   ChangeMe2!
