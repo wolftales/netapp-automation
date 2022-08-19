@@ -1,10 +1,10 @@
-#
+###
 #  Provides the first aggregate that matches the aggr_type or storage-type being searched for
 #  includes:
 #     'aggr_type' for target storage media
 #     'size' requested / needed
 #     'used_cap' as a thresold to limit overprovisioning aggregates
-#
+###
 ---
 - hosts: localhost
   name: Select Aggregate
@@ -13,8 +13,8 @@
     - netapp.ontap
   
   vars:
-    # aggr_type: ssd  # AFF, or flash-based aggrs
-    aggr_type: hdd  # FAS, non-flash
+    # aggr_type: ssd                      # AFF, or flash-based aggrs
+    aggr_type: hdd                      # FAS, non-flash
     used_cap: 80
     size: 1
     netapp_hostname: 192.168.7.200
@@ -29,7 +29,7 @@
     na_ontap_info:
       gather_subset: aggregate_info
       hostname: "{{ netapp_hostname }}"
-      query:   # Exmaple for filtering to storage-type
+      query:                            # Examaple to filter for storage-type
         aggr-attributes:
           aggr-raid-attributes:
             aggregate-type: "{{ aggr_type }}"
