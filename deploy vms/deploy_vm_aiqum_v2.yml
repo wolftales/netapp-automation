@@ -1,0 +1,33 @@
+---
+- name: Build AIQUM from OVA
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - community.vmware
+
+  vars:
+    ovf_version:        "9.11.1"
+    ovf_file:           "files/AIQUM/ActiveIQUnifiedManager-{{ ovf_version }}.ova"
+    vcenter_address:    vcenter.demo.lab
+    vcenter_username:   administrator@vsphere.local
+    vcenter_password:   ChangeMe2!
+    vcenter_datacenter: "Datacenter 1"
+    vm_datastore:       "datastore1"
+  vars_files:
+    - ./vars/vars_vcenter_exampleLab.yml
+    - ./vars/vars_aiqum.yml
+
+  tasks:
+    - include_role:
+        name: deploy_ovf_aiqum
+      vars:
+        vm_name:          "{{ aiqum.name }}"
+        vm_fqdn:          "{{ aiqum.fqdn }}"
+        vm_username:      "{{ aiqum.username }}"
+        vm_password:      "{{ aiqum.password }}"
+        vm_network:       "{{ aiqum.vm_network }}"
+        vm_address:       "{{ aiqum.address }}"
+        vm_netmask:       "{{ aiqum.netmask }}"
+        vm_gateway:       "{{ aiqum.gateway }}"
+        vm_primary_dns:   "{{ aiqum.dns_1 }}"
+        vm_secondary_dns: "{{ aiqum.dns_2 }}"

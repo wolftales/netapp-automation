@@ -1,6 +1,7 @@
 # General ignore list
 files/ONTAP/*
 files/StorageGRID/*
+*files/*
 
 # Specific ignore list
 vars/vars_vcenter_exampleLab.yml
