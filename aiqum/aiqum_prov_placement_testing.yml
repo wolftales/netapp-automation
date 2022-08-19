@@ -1,0 +1,141 @@
+---
+- hosts: localhost
+  name: AIQUM Get Datacenter Provisioning Recommendation
+  gather_facts: no
+  collections:
+    - netapp.ontap
+
+  vars:
+    # Basic Provisioning details
+    vserver_name:       "ontap-vs01"           # Primary SVM
+    service_level_name: "Value"                 # Storage Performance Service Level
+    vol_name:           "aiqum_test_nfs_03"     # Volume name
+    vol_type:           dp                      # Used to create destination SM vol
+    size:               1                       # In GB
+    convert:            "{{ size * 1073741824 }}"  # volume size * 1 GB = 1073741824 B
+    capacity:           "{{ convert }}"         # volume size in bytes 1 GB = 1073741824 B
+    auto_size:          grow_shrink             # off, grow, or grow_shrink
+
+  vars_files:
+  - ../deploy_vms/vars/vars_aiqum.yml
+
+  tasks:
+
+  - name: AIQUM Get Datacenter SVMs
+    uri:
+      method: GET
+      url: "{{ aiqum.api_endpoint }}/datacenter/svm/svms"
+      return_content: yes
+      headers:
+        accept: application/json
+      url_username: "{{ aiqum.username }}"
+      url_password: "{{ aiqum.password }}"
+      validate_certs: false
+      force_basic_auth: yes
+    register: json_response
+
+  - name: Display Datacenter SVMs
+    ansible.builtin.debug:
+      msg: "{{ item.name }}"
+    loop: "{{ json_response.json.records }}"
+    loop_control:
+      label: ""
+
+  # - name: Set SVM key
+  #   set_fact:
+  #     svm_key: "{{ item.key }}"
+  #   loop: "{{ json_response.json.records }}"
+  #   when:
+  #     - item.name == vserver_name
+
+  - name: AIQUM Get Service Level
+    uri:
+      method: GET
+      url: "{{ aiqum.api_endpoint }}/storage-provider/performance-service-levels"
+      return_content: yes
+      headers:
+        accept: application/json
+      url_username: "{{ aiqum.username }}"
+      url_password: "{{ aiqum.password }}"
+      validate_certs: false
+      force_basic_auth: yes
+    register: json_response
+
+  # - name: Set Service Level key
+  #   set_fact:
+  #     service_level_key: "{{ item.key }}"
+  #   loop: "{{ json_response.json.records }}"
+  #   when:
+  #     - item.name == service_level_name
+
+  - name: Display Performance Service Levels
+    ansible.builtin.debug:
+      msg: "{{ item.name }}"
+    loop: "{{ json_response.json.records }}"
+    loop_control:
+      label: ""
+
+  ##
+  # Validate contents of var: Performance Service Levels (psl)
+  ##
+
+  # Test element Displayed
+  - debug:
+      msg:
+        - "{{ item.name }}"
+      # - get_result.json.records.[item].system_defined
+      # - "{{ item }}.system_defined"
+    name: "Display get_result"
+    loop: "{{ json_response.json.records }}"
+    loop_control:
+      label: "{{ item.name }}"
+    # when:  {{ item.system_defined }} == false
+    when: json_response.json.records[item.system_defined] is true
+
+  # # Display Select(relevant) Informaiton from Performance Service Levels (PSLs)
+  # - debug:
+  #     msg:
+  #       {
+  #         "PSL Name":                   "{{ item.name }}",
+  #         "PSL Description":            "{{ item.description }}",
+  #         "PSL SLA (Expected)":         "{{ item.iops.expected_iops_per_tb }}",
+  #         "PSL SLO (Peak)":             "{{ item.iops.peak_iops_per_tb }}",
+  #         "PSL MIN IOPs":               "{{ item.iops.absolute_min_iops }}",
+  #         "PSL Peak Allocation Policy": "{{ item.iops.peak_iops_allocation_policy }}",
+  #         "PSL Latency":                "{{ item.latency }}",
+  #         "PSL Syste-Defined":          "{{ item.system_defined }}"
+  #       }
+  #   name: 'Display API GET PSL results'
+
+  #   loop: "{{ json_response.json.records }}"
+  #   # loop_control:
+  #   #   label: "{{ psl }}"
+  #   when:  json_response.json.records.[ 'item' ].system_defined == 'true'
+
+  ##
+  # GET Placement Recommendation: Performance Service Levels (psl)
+  ##
+
+  # - name: AIQUM Volume Provision Recommendation
+  #   uri:
+  #     method: GET
+  #     url: "{{ aiqum.api_endpoint }}/datacenter/storage/data-placement"
+  #     return_content: yes
+  #     body:
+  #       name: "{{ vol_name }}"
+  #       performance_service_level:
+  #         key: "{{ service_level_key }}"
+  #       space:
+  #         size: "{{ capacity }}"
+  #       type: "{{ vol_type }}"
+  #       svm:
+  #         key: "{{ svm_key }}"
+  #     body_format: json
+  #     force_basic_auth: yes
+  #     validate_certs: false
+  #     url_username: "{{ aiqum.username }}"
+  #     url_password: "{{ aiqum.password }}"
+  #     headers:
+  #       Accept: application/json
+  #     status_code: 202
+  #   register: json_response

@@ -1,0 +1,70 @@
+---
+- hosts: localhost
+  name: Configure Standard Performance Service Levels (PSLs)
+  gather_facts: false
+  ignore_errors: true
+
+  vars:
+    aiqum:
+      hostname:       192.168.7.225
+      username:       admin
+      password:       netapp1234
+      api_endpoint:   https://192.168.7.225/api  # NetApp AIQUM API endpoint
+
+  vars_files:
+  - ../vars/vars_aigum_psl_definitions.yml
+
+  tasks:
+
+  ##
+  # Validate contents of var: Performance Service Levels (psl)
+  ##
+  # - debug:
+  #     msg:
+  #       {
+  #         "PSL Name": "{{ item.name }}",
+  #         "Description": "{{ item.description }}",
+  #         "Min IOPs": "{{ item.iops.min }}",
+  #         "Expected IOPs": "{{ item.iops.expected }}",
+  #         "Peak IOPs": "{{ item.iops.peak }}",
+  #         "Latency": "{{ item.latency }}"
+  #       }
+  #   loop: "{{ psl }}"
+  #   name: 'Display content of var: Performance Service Levels (psl)'
+
+  ##
+  # AIQUM API calls
+  ##
+
+  - name: POST new Performance Service Levels
+    uri:
+      url: "{{ aiqum.api_endpoint }}/storage-provider/performance-service-levels"
+      user:     "{{ aiqum.username }}"
+      password: "{{ aiqum.password }}"
+      force_basic_auth: yes
+      validate_certs: no
+      method: POST
+      headers:
+        content-Type: application/json
+        accept: application/json
+      body_format: json
+      body:
+        name:                         "{{ item.name }}"
+        description:                  "{{ item.description }}"
+        iops:
+          absolute_min_iops:           "{{ item.iops.min }}"
+          expected_iops_per_tb:        "{{ item.iops.expected }}"
+          peak_iops_allocation_policy: "used_space"
+          peak_iops_per_tb:            "{{ item.iops.peak }}"
+        latency:
+         expected:                    "{{ item.latency }}"
+      status_code: 201
+    loop:
+      "{{ psl }}"
+    loop_control:
+        label: "{{ item }}: {{ item.description }}"
+    register: post_result
+
+  - debug:
+      var: post_result
+    name: 'Display post_result'

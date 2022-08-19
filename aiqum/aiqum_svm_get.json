@@ -1,0 +1,302 @@
+{
+    "msg": [
+        [
+            {
+                "_links": {
+                    "self": {
+                        "href": "/api/datacenter/svm/svms/f7f4cd7b-00e7-11eb-973d-0050568d4591:type=vserver,uuid=d169ea11-31bd-11ec-973d-0050568d4591"
+                    }
+                },
+                "aggregates": [
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/f7f4cd7b-00e7-11eb-973d-0050568d4591:type=aggregate,uuid=78c0e020-5fbe-41a4-b21a-ccef5a96d0ee"
+                            }
+                        },
+                        "key": "f7f4cd7b-00e7-11eb-973d-0050568d4591:type=aggregate,uuid=78c0e020-5fbe-41a4-b21a-ccef5a96d0ee",
+                        "name": "dest97_01_aggr1",
+                        "uuid": "78c0e020-5fbe-41a4-b21a-ccef5a96d0ee"
+                    },
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/f7f4cd7b-00e7-11eb-973d-0050568d4591:type=aggregate,uuid=d489a00c-3a08-463c-94e9-6e62e410245e"
+                            }
+                        },
+                        "key": "f7f4cd7b-00e7-11eb-973d-0050568d4591:type=aggregate,uuid=d489a00c-3a08-463c-94e9-6e62e410245e",
+                        "name": "aggr0_dest97_01",
+                        "uuid": "d489a00c-3a08-463c-94e9-6e62e410245e"
+                    },
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/f7f4cd7b-00e7-11eb-973d-0050568d4591:type=aggregate,uuid=78a28e32-732a-49ef-b7e6-1775d505c014"
+                            }
+                        },
+                        "key": "f7f4cd7b-00e7-11eb-973d-0050568d4591:type=aggregate,uuid=78a28e32-732a-49ef-b7e6-1775d505c014",
+                        "name": "dest97_01_aggr2",
+                        "uuid": "78a28e32-732a-49ef-b7e6-1775d505c014"
+                    }
+                ],
+                "cifs": {
+                    "ad_domain": {
+                        "fqdn": "EXAMPLE.LOCAL"
+                    },
+                    "enabled": true,
+                    "name": "DESTINATION"
+                },
+                "cluster": {
+                    "_links": {
+                        "self": {
+                            "href": "/api/datacenter/cluster/clusters/f7f4cd7b-00e7-11eb-973d-0050568d4591:type=cluster,uuid=f7f4cd7b-00e7-11eb-973d-0050568d4591"
+                        }
+                    },
+                    "key": "f7f4cd7b-00e7-11eb-973d-0050568d4591:type=cluster,uuid=f7f4cd7b-00e7-11eb-973d-0050568d4591",
+                    "name": "dest97",
+                    "uuid": "f7f4cd7b-00e7-11eb-973d-0050568d4591"
+                },
+                "dns": {
+                    "domains": [
+                        "example.local"
+                    ],
+                    "servers": [
+                        "192.168.7.3"
+                    ]
+                },
+                "fcp": {
+                    "enabled": null
+                },
+                "ipspace": {
+                    "_links": {},
+                    "key": "fe93f106-00e7-11eb-973d-0050568d4591:type=network_ip_space",
+                    "name": "Default",
+                    "uuid": "fe93f106-00e7-11eb-973d-0050568d4591"
+                },
+                "iscsi": {
+                    "enabled": null
+                },
+                "key": "f7f4cd7b-00e7-11eb-973d-0050568d4591:type=vserver,uuid=d169ea11-31bd-11ec-973d-0050568d4591",
+                "language": "c.utf_8",
+                "ldap": {
+                    "enabled": null
+                },
+                "name": "destination",
+                "nfs": {
+                    "enabled": true
+                },
+                "nis": {
+                    "domain": null,
+                    "enabled": null,
+                    "servers": null
+                },
+                "nvme": {
+                    "enabled": null
+                },
+                "snapshot_policy": {
+                    "_links": {},
+                    "key": "f7f4cd7b-00e7-11eb-973d-0050568d4591:type=snapshot_policy,vserver_uuid=00e22c59-00e8-11eb-973d-0050568d4591,name=default",
+                    "name": "default",
+                    "uuid": null
+                },
+                "state": "running",
+                "subtype": "default",
+                "uuid": "d169ea11-31bd-11ec-973d-0050568d4591"
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "/api/datacenter/svm/svms/a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=vserver,uuid=d9baca0d-2c72-11ec-b5ce-0050568d17f0"
+                    }
+                },
+                "aggregates": [
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=aggregate,uuid=c49506e0-56bf-4fce-94a0-749baba7e6de"
+                            }
+                        },
+                        "key": "a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=aggregate,uuid=c49506e0-56bf-4fce-94a0-749baba7e6de",
+                        "name": "ontap_cl01_02_aggr1",
+                        "uuid": "c49506e0-56bf-4fce-94a0-749baba7e6de"
+                    },
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=aggregate,uuid=72b8e5dd-0e3c-4b9d-a4c7-00531958fd86"
+                            }
+                        },
+                        "key": "a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=aggregate,uuid=72b8e5dd-0e3c-4b9d-a4c7-00531958fd86",
+                        "name": "ontap_cl01_01_aggr1",
+                        "uuid": "72b8e5dd-0e3c-4b9d-a4c7-00531958fd86"
+                    }
+                ],
+                "cifs": {
+                    "ad_domain": {
+                        "fqdn": null
+                    },
+                    "enabled": null,
+                    "name": null
+                },
+                "cluster": {
+                    "_links": {
+                        "self": {
+                            "href": "/api/datacenter/cluster/clusters/a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=cluster,uuid=a74c3b39-fe2a-11ea-b5ce-0050568d17f0"
+                        }
+                    },
+                    "key": "a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=cluster,uuid=a74c3b39-fe2a-11ea-b5ce-0050568d17f0",
+                    "name": "ontap-cl01",
+                    "uuid": "a74c3b39-fe2a-11ea-b5ce-0050568d17f0"
+                },
+                "dns": {
+                    "domains": [
+                        "example.local"
+                    ],
+                    "servers": [
+                        "192.168.7.3"
+                    ]
+                },
+                "fcp": {
+                    "enabled": null
+                },
+                "ipspace": {
+                    "_links": {},
+                    "key": "adbba784-fe2a-11ea-b5ce-0050568d17f0:type=network_ip_space",
+                    "name": "Default",
+                    "uuid": "adbba784-fe2a-11ea-b5ce-0050568d17f0"
+                },
+                "iscsi": {
+                    "enabled": null
+                },
+                "key": "a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=vserver,uuid=d9baca0d-2c72-11ec-b5ce-0050568d17f0",
+                "language": "c.utf_8",
+                "ldap": {
+                    "enabled": null
+                },
+                "name": "ontap-vs01",
+                "nfs": {
+                    "enabled": true
+                },
+                "nis": {
+                    "domain": null,
+                    "enabled": null,
+                    "servers": null
+                },
+                "nvme": {
+                    "enabled": null
+                },
+                "snapshot_policy": {
+                    "_links": {},
+                    "key": "a74c3b39-fe2a-11ea-b5ce-0050568d17f0:type=snapshot_policy,vserver_uuid=b34d5256-fe2a-11ea-b5ce-0050568d17f0,name=default",
+                    "name": "default",
+                    "uuid": null
+                },
+                "state": "running",
+                "subtype": "default",
+                "uuid": "d9baca0d-2c72-11ec-b5ce-0050568d17f0"
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "/api/datacenter/svm/svms/84be4d6e-00e7-11eb-a819-0050568d622e:type=vserver,uuid=d4b9d91b-31bd-11ec-a819-0050568d622e"
+                    }
+                },
+                "aggregates": [
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/84be4d6e-00e7-11eb-a819-0050568d622e:type=aggregate,uuid=ec9255eb-8655-46ae-8f36-9c0e8f1c6df2"
+                            }
+                        },
+                        "key": "84be4d6e-00e7-11eb-a819-0050568d622e:type=aggregate,uuid=ec9255eb-8655-46ae-8f36-9c0e8f1c6df2",
+                        "name": "sour97_01_aggr1",
+                        "uuid": "ec9255eb-8655-46ae-8f36-9c0e8f1c6df2"
+                    },
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/84be4d6e-00e7-11eb-a819-0050568d622e:type=aggregate,uuid=fb8994fc-e77d-4f9d-9747-528c1746fdf5"
+                            }
+                        },
+                        "key": "84be4d6e-00e7-11eb-a819-0050568d622e:type=aggregate,uuid=fb8994fc-e77d-4f9d-9747-528c1746fdf5",
+                        "name": "aggr0_sour97_01",
+                        "uuid": "fb8994fc-e77d-4f9d-9747-528c1746fdf5"
+                    },
+                    {
+                        "_links": {
+                            "self": {
+                                "href": "/api/datacenter/storage/aggregates/84be4d6e-00e7-11eb-a819-0050568d622e:type=aggregate,uuid=1e15b026-9793-4d3a-810c-4886aca20345"
+                            }
+                        },
+                        "key": "84be4d6e-00e7-11eb-a819-0050568d622e:type=aggregate,uuid=1e15b026-9793-4d3a-810c-4886aca20345",
+                        "name": "sour97_01_aggr2",
+                        "uuid": "1e15b026-9793-4d3a-810c-4886aca20345"
+                    }
+                ],
+                "cifs": {
+                    "ad_domain": {
+                        "fqdn": "EXAMPLE.LOCAL"
+                    },
+                    "enabled": true,
+                    "name": "SOURCE"
+                },
+                "cluster": {
+                    "_links": {
+                        "self": {
+                            "href": "/api/datacenter/cluster/clusters/84be4d6e-00e7-11eb-a819-0050568d622e:type=cluster,uuid=84be4d6e-00e7-11eb-a819-0050568d622e"
+                        }
+                    },
+                    "key": "84be4d6e-00e7-11eb-a819-0050568d622e:type=cluster,uuid=84be4d6e-00e7-11eb-a819-0050568d622e",
+                    "name": "sour97",
+                    "uuid": "84be4d6e-00e7-11eb-a819-0050568d622e"
+                },
+                "dns": {
+                    "domains": [
+                        "example.local"
+                    ],
+                    "servers": [
+                        "192.168.7.3"
+                    ]
+                },
+                "fcp": {
+                    "enabled": null
+                },
+                "ipspace": {
+                    "_links": {},
+                    "key": "8b26a1a7-00e7-11eb-a819-0050568d622e:type=network_ip_space",
+                    "name": "Default",
+                    "uuid": "8b26a1a7-00e7-11eb-a819-0050568d622e"
+                },
+                "iscsi": {
+                    "enabled": null
+                },
+                "key": "84be4d6e-00e7-11eb-a819-0050568d622e:type=vserver,uuid=d4b9d91b-31bd-11ec-a819-0050568d622e",
+                "language": "c.utf_8",
+                "ldap": {
+                    "enabled": null
+                },
+                "name": "source",
+                "nfs": {
+                    "enabled": true
+                },
+                "nis": {
+                    "domain": null,
+                    "enabled": null,
+                    "servers": null
+                },
+                "nvme": {
+                    "enabled": null
+                },
+                "snapshot_policy": {
+                    "_links": {},
+                    "key": "84be4d6e-00e7-11eb-a819-0050568d622e:type=snapshot_policy,vserver_uuid=8fbaf82f-00e7-11eb-a819-0050568d622e,name=default",
+                    "name": "default",
+                    "uuid": null
+                },
+                "state": "running",
+                "subtype": "default",
+                "uuid": "d4b9d91b-31bd-11ec-a819-0050568d622e"
+            }
+        ]
+    ]
+}

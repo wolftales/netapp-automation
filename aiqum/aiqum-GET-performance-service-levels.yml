@@ -1,0 +1,54 @@
+---
+- hosts: localhost
+  name: GET Configured Performance Service Levels (PSLs)
+  gather_facts: false
+  # ignore_errors: true
+
+  vars:
+
+  vars_files:
+    - ../deploy_vms/vars/vars_aiqum.yml
+
+  tasks:
+    ##
+    # AIQUM API calls - GET Performance Service Levels (PSLs)
+    ##
+
+    - name: GET new Performance Service Levels
+      uri:
+        url: "{{ aiqum.api_endpoint }}/storage-provider/performance-service-levels"
+        user: "{{ aiqum.username }}"
+        password: "{{ aiqum.password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        method: GET
+        headers:
+          content-Type: application/json
+          accept: application/json
+        body_format: json
+        status_code: 200
+      register: get_result
+
+    ##
+    # Validate contents of var: Performance Service Levels (psl)
+    ##
+
+    # Display Select(relevant) Informaiton from Performance Service Levels (PSLs)
+    - debug:
+        msg:
+          {
+            "PSL Name":                   "{{ item.name }}",
+            "PSL Description":            "{{ item.description }}",
+            "PSL SLA (Expected)":         "{{ item.iops.expected_iops_per_tb }}",
+            "PSL SLO (Peak)":             "{{ item.iops.peak_iops_per_tb }}",
+            "PSL MIN IOPs":               "{{ item.iops.absolute_min_iops }}",
+            "PSL Peak Allocation Policy": "{{ item.iops.peak_iops_allocation_policy }}",
+            "PSL Latency":                "{{ item.latency }}",
+            "PSL Syste-Defined":          "{{ item.system_defined }}"
+          }
+      name: 'Display API GET PSL results'
+
+      loop: "{{ get_result.json.records }}"
+      loop_control:
+        label: "{{ item.name }}"
+      # when:  item.system_defined == true

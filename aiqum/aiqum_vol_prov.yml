@@ -1,0 +1,125 @@
+---
+- hosts: localhost
+  name: AIQUM provision an NFS volume
+  gather_facts: no
+  collections:
+    - netapp.ontap
+  
+  vars:
+    # Crednetials
+    hostname:               192.168.7.240
+    username:               admin
+    password:               netapp1234
+
+    # Basic Provisioning details
+    vserver:                "source"              # Primary SVM
+    peer_vserver:           "destination"         # Secondary SVM
+    service_level_name:     "Value"               # Storage Performance Service Level
+    vol_name:               "aiqum_test_nfs_03"   # Volume name
+    size:                   1                     # In GB
+    convert:                "{{ size * 1073741824 }}"  # volume size * 1 GB = 1073741824 B
+    capacity:               "{{ convert }}"         # volume size in bytes 1 GB = 1073741824 B
+    auto_size:              grow_shrink           # off, grow, or grow_shrink
+
+    # Credential Section
+    netapp_username:        "{{ username }}"  # NetApp Adminstrative credentials
+    netapp_password:        "{{ password }}"  # NetApp Adminstrative credentials
+    admin_username:         "{{ netapp_username }}"  # NetApp Adminstrative credentials
+    admin_password:         "{{ netapp_password }}"  # NetApp Adminstrative credentials
+    dst_admin_username:     "{{ netapp_username }}"  # NetApp Adminstrative credentials
+    dst_admin_password:     "{{ netapp_password }}"  # NetApp Adminstrative credentials
+
+    # AIQUM
+    aiqum_username:         "{{ netapp_username }}"  # NetApp Adminstrative credentials
+    aiqum_password:         "{{ netapp_password }}"  # NetApp Adminstrative credentials
+    aiqum_endpoint_url:     https://192.168.7.225/api  # NetApp AIQUM API endpoint
+
+    aiqum_prov:
+      vserver_name:         "{{ vserver }}"
+      service_level_name:   "{{ service_level_name }}"
+      vol_name:             "{{ vol_name }}"
+      capacity:             "{{ capacity }}"
+    
+
+    
+  tasks:
+  
+  - name: 'validate required inputs'
+    assert:
+      that:
+        - aiqum_prov.vserver_name         is defined
+        - aiqum_prov.service_level_name   is defined
+        - aiqum_prov.vol_name             is defined
+        - aiqum_prov.capacity             is defined
+
+    ignore_errors:                        true
+    register:                             ed_failed
+
+  - name: 'fail on invalid parameters'
+    fail:
+      msg: 'ERROR: invalid parameters'
+    when:
+      - ed_failed.failed
+
+  - name: AIQUM Get Datacenter SVMs
+    uri:
+      method: GET
+      url: "{{ aiqum_endpoint_url }}/datacenter/svm/svms"
+      return_content: yes
+      headers:
+        accept: application/json
+      url_username: "{{ aiqum_username }}"
+      url_password: "{{ aiqum_password }}"
+      validate_certs: false
+      force_basic_auth: yes
+    register: json_response
+
+  - name: Set SVM key
+    set_fact:
+      svm_key:  "{{ item.key }}"
+    loop:   "{{ json_response.json.records }}"
+    when:
+      - item.name == aiqum_prov.vserver_name
+
+  - name: AIQUM Get Service Level
+    uri:
+      method: GET
+      url: "{{ aiqum_endpoint_url }}/storage-provider/performance-service-levels"
+      return_content: yes
+      headers:
+        accept: application/json
+      url_username: "{{ aiqum_username }}"
+      url_password: "{{ aiqum_password }}"
+      validate_certs: false
+      force_basic_auth: yes
+    register: json_response
+
+  - name: Set Service Level key
+    set_fact:
+      service_level_key:    "{{ item.key }}"
+    loop:   "{{ json_response.json.records }}"
+    when:
+      - item.name == aiqum_prov.service_level_name
+
+  - name: AIQUM Provision NFS Export
+    uri:
+      method: POST
+      url: "{{ aiqum_endpoint_url }}/storage-provider/file-shares"
+      return_content: yes
+      body:
+        name:      "{{ aiqum_prov.vol_name }}"
+        performance_service_level:
+          key: "{{ service_level_key }}"
+        space:
+          size: "{{ aiqum_prov.capacity }}"
+        svm:
+          key: "{{ svm_key }}"
+      body_format: json
+      force_basic_auth: yes
+      validate_certs:   false
+      url_username:     "{{ aiqum_username }}"
+      url_password:     "{{ aiqum_password }}"
+      headers:
+        Accept: application/json
+      status_code:      202
+    register: json_response
