@@ -7,7 +7,7 @@
   vars:
 
   vars_files:
-    - ../deploy_vms/vars/vars_aiqum.yml
+    - ../../deploy_vms/vars/vars_aiqum.yml
 
   tasks:
     ##

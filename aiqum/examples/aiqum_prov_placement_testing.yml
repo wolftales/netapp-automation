@@ -17,7 +17,7 @@
     auto_size:          grow_shrink             # off, grow, or grow_shrink
 
   vars_files:
-  - ../deploy_vms/vars/vars_aiqum.yml
+  - ../../deploy_vms/vars/vars_aiqum.yml
 
   tasks:
 
@@ -41,12 +41,12 @@
     loop_control:
       label: ""
 
-  # - name: Set SVM key
-  #   set_fact:
-  #     svm_key: "{{ item.key }}"
-  #   loop: "{{ json_response.json.records }}"
-  #   when:
-  #     - item.name == vserver_name
+  - name: Set SVM key
+    set_fact:
+      svm_key: "{{ item.key }}"
+    loop: "{{ json_response.json.records }}"
+    when:
+      - item.name == vserver_name
 
   - name: AIQUM Get Service Level
     uri:
@@ -61,12 +61,12 @@
       force_basic_auth: yes
     register: json_response
 
-  # - name: Set Service Level key
-  #   set_fact:
-  #     service_level_key: "{{ item.key }}"
-  #   loop: "{{ json_response.json.records }}"
-  #   when:
-  #     - item.name == service_level_name
+  - name: Set Service Level key
+    set_fact:
+      service_level_key: "{{ item.key }}"
+    loop: "{{ json_response.json.records }}"
+    when:
+      - item.name == service_level_name
 
   - name: Display Performance Service Levels
     ansible.builtin.debug:
@@ -116,26 +116,26 @@
   # GET Placement Recommendation: Performance Service Levels (psl)
   ##
 
-  # - name: AIQUM Volume Provision Recommendation
-  #   uri:
-  #     method: GET
-  #     url: "{{ aiqum.api_endpoint }}/datacenter/storage/data-placement"
-  #     return_content: yes
-  #     body:
-  #       name: "{{ vol_name }}"
-  #       performance_service_level:
-  #         key: "{{ service_level_key }}"
-  #       space:
-  #         size: "{{ capacity }}"
-  #       type: "{{ vol_type }}"
-  #       svm:
-  #         key: "{{ svm_key }}"
-  #     body_format: json
-  #     force_basic_auth: yes
-  #     validate_certs: false
-  #     url_username: "{{ aiqum.username }}"
-  #     url_password: "{{ aiqum.password }}"
-  #     headers:
-  #       Accept: application/json
-  #     status_code: 202
-  #   register: json_response
+  - name: AIQUM Volume Provision Recommendation
+    uri:
+      method: GET
+      url: "{{ aiqum.api_endpoint }}/datacenter/storage/data-placement"
+      return_content: yes
+      body:
+        name: "{{ vol_name }}"
+        performance_service_level:
+          key: "{{ service_level_key }}"
+        space:
+          size: "{{ capacity }}"
+        type: "{{ vol_type }}"
+        svm:
+          key: "{{ svm_key }}"
+      body_format: json
+      force_basic_auth: yes
+      validate_certs: false
+      url_username: "{{ aiqum.username }}"
+      url_password: "{{ aiqum.password }}"
+      headers:
+        Accept: application/json
+      status_code: 202
+    register: json_response
