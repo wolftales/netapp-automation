@@ -54,9 +54,10 @@
   #     unsafe: false
   vars_files:
   # - vars/vars_ontap_redshirt.yml
-  - vars/vars_ontap_sandbox.yml
-  - vars/vars_ontap_config_vsim.yml
-  - vars/vars_ontap_config_role.yml
+  # - vars/vars_ontap_sandbox.yml
+  - vars/vars_ontap_testTap.yml
+  - vars/vars_ontap_config_vsim_single.yml
+  - vars/vars_ontap_config_role_single.yml
   - vars/vars_vsim_licenses.yml
 
   collections:

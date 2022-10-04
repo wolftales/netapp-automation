@@ -1,0 +1,30 @@
+###
+#  Ansible identity vars file for 'sandbox'
+#  Basic VM Deploy varible set.
+###
+
+###
+# Varibles for ONTAP cluster setup & config
+cluster:          testTap
+clus:
+  name:           "{{ cluster }}"
+  loc:            VSIM                   # 'system snmp location'
+  mgmt:           192.168.7.187
+  netmask:        255.255.255.0
+  gateway:        192.168.7.1
+  aggr:           "{{ cluster | replace('-','_') }}"  # Replaces - with _
+
+# Node & SVM Network IP address Information
+  node1:
+    node_mgmt_ip:   192.168.7.188
+    icl:            
+      ip:           192.168.7.186
+      # netmask:      "{{ clus.netmask }}"
+      # gateway:      "{{ clus.gateway }}"
+    svm_lif1:       192.168.7.189
+
+# Authentification Defaults
+netapp_hostname:  "{{ clus.mgmt }}"
+netapp_username:  admin
+netapp_password:  netapp1234     # Comment-out or Remove to use vars_prompt or vault password
+validate_certs:   false          # Set to bypass security error due to self-signed certs
