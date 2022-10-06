@@ -12,7 +12,7 @@ files/*
 deploy_vms/vars/vars_*
 ontap/vars/vars_*
 storagegrid/vars/vars_*
-*/vars/vars_*.yml
+# */vars/vars_*.yml
 
 # Mac/OSX
 .DS_Store

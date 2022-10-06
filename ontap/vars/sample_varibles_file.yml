@@ -1,0 +1,92 @@
+###
+#  Ansible identity vars file for 'vsim'
+#  Basic VM vsim Deploy varible set.
+###
+
+###
+# Varibles for ONTAP cluster setup & config
+cluster:          testTap
+
+###
+# Cluster and network services config
+clus:
+  name:           "{{ cluster }}"
+  loc:            VSIM                  # 'system snmp location'
+  
+  aggr:           
+    name:         "{{ cluster | replace('-','_') }}"  # Replaces - with _
+    raid: 
+      count:      24
+      size:       24
+
+  net:
+    mgmt:           192.168.0.100
+    netmask:        255.255.255.0
+    gateway:        192.168.0.1
+
+  ###
+  # DNS Services Settings
+  # Note: 
+    dns:
+      domain:     example.local
+      srvrs:       192.168.0.3
+  ###
+  # NTP Settings
+    time:
+      zone:       "US/Pacific"          #  <Area/Location Timezone> - Specified in the Olson format
+    # zone:          'ETC/GMT'           #  <Area/Location Timezone> - Specified in the Olson format
+    # zone:          'GMT'               #  <Area/Location Timezone> - Specified in the Olson format
+    # zone:          'ETC/PST'           #  <Area/Location Timezone> - Specified in the Olson format
+      srvr:           time.example.local
+      # time:             time.nist.gov
+      # time:             time.apple.com
+      # time:             time.windows.com
+
+    ifgrp: 
+      name:         a0a         # IFGPR Interface name to be created
+      ports:        e0f         # Member interfaces to build IFGPR
+
+    vlans:
+      vlan_id:      42          # VLAN ID for fongiuring VLAN Tagging
+
+# Node & SVM Network IP address Information
+node1:
+  node_mgmt_ip:   192.168.0.101
+  icl:            
+    ip:           192.168.0.102
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  svm_lif1: 
+    ip:           192.168.0.103
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+
+###
+# SVM Configuration Info
+vserver:          vs01
+
+###
+# SVM Configuration Settings & Network IP address Information
+svm:
+  name:           "{{ vserver }}"
+  rootvol:        "{{ vserver | replace('-','_') }}"  # Replaces - with _
+  netmask:        "{{ clus.net.netmask }}"    # Replace with IP if not the same
+  gateway:        "{{ clus.net.gateway }}"    # Replace with IP if not the same
+  dns_domain:     "{{ clus.net.dns.domain | default('example.local') }}"  # Replace with IP if not the same as cluster
+  dns_srvrs:      "{{ clus.net.dns.srvrs | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
+  aggrs:          "{{ clus.aggr.name }}_01_aggr1"
+  aggr_list:      '[  ]'
+  protocol:       nfs
+  # export_policy:
+  # - name:  'Data'
+  #   client_match:
+  #   index:
+  #   ro_rule:
+  #   rw_rule:
+  #   super_user_security:
+
+# Authentification Defaults
+netapp_hostname:  "{{ clus.net.mgmt }}"
+netapp_username:  admin
+netapp_password:  ChangeMe!     # Comment-out or Remove to use vars_prompt or vault password
+validate_certs:   false          # Set to bypass security error due to self-signed certs
