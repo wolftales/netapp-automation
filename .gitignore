@@ -1,17 +1,18 @@
 # General ignore list
-files/ONTAP/*
-files/StorageGRID/*
-*files/*
+# files/ONTAP/*
+# files/StorageGRID/*
+files/*
 
 # Specific ignore list
-vars/vars_vcenter_exampleLab.yml
-*_exampleLab.yml
-*_sandbox.yml
-*_redshirt.yml
-*vars/vars_*.yml
-deploy vms/vars*
-ontap/vars/*
-storagegrid/vars/*
+*/vars_vcenter_exampleLab.yml
+# *_exampleLab.yml
+# *_sandbox.yml
+# *_redshirt.yml
+# *vars/vars_*.yml
+deploy_vms/vars/vars_*
+ontap/vars/vars_*
+storagegrid/vars/vars_*
+*/vars/vars_*.yml
 
 # Mac/OSX
 .DS_Store

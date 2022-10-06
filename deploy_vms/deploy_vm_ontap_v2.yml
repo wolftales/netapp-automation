@@ -35,7 +35,9 @@
     - vars/vars_vcenter_exampleLab.yml
     # - vars/vars_ontap_redshirt.yml
     # - vars/vars_ontap_sandbox.yml
-    - vars/vars_ontap_testTap.yml
+    # - vars/vars_ontap_testTap.yml
+    - vars/vars_ontap_primary.yml
+    # - vars/vars_ontap_secondary.yml
 
   tasks:
     
