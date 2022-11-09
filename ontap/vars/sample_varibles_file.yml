@@ -1,12 +1,11 @@
 ###
-#  Ansible identity vars file for 'sandbox'
-#  Advanced ONTAP configuration varible set
+#  Ansible identity vars file for 'vsim'
+#  Basic VM vsim Deploy varible set.
 ###
 
 ###
 # Varibles for ONTAP cluster setup & config
-cluster:        sandbox
-
+cluster:          testTap
 
 ###
 # Cluster and network services config
@@ -21,16 +20,16 @@ clus:
       size:       24
 
   net:
-    mgmt:           192.168.7.200
+    mgmt:           192.168.0.100
     netmask:        255.255.255.0
-    gateway:        192.168.7.1
+    gateway:        192.168.0.1
 
   ###
   # DNS Services Settings
   # Note: 
     dns:
       domain:     example.local
-      srvrs:       192.168.7.3
+      srvrs:       192.168.0.3
   ###
   # NTP Settings
     time:
@@ -49,45 +48,22 @@ clus:
 
     vlans:
       vlan_id:      42          # VLAN ID for fongiuring VLAN Tagging
-  
 
-###
 # Node & SVM Network IP address Information
 node1:
-  mgmt_ip:      192.168.7.201
-  sp:
-    ip:         192.168.7.xx
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  icl: 
-    ip:         192.168.7.202
+  node_mgmt_ip:   192.168.0.101
+  icl:            
+    ip:           192.168.0.102
     netmask:      "{{ clus.net.netmask }}"
     gateway:      "{{ clus.net.gateway }}"
   svm_lif1: 
-    ip:         192.168.7.205
+    ip:           192.168.0.103
     netmask:      "{{ clus.net.netmask }}"
     gateway:      "{{ clus.net.gateway }}"
-node2:
-  mgmt_ip:      192.168.7.203
-  sp:
-    ip:         192.168.7.xx
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  icl: 
-    ip:         192.168.7.204
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  svm_lif1: 
-    ip:         192.168.7.206
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-
-
 
 ###
 # SVM Configuration Info
-vserver:          ontap-vs01
-
+vserver:          vs01
 
 ###
 # SVM Configuration Settings & Network IP address Information
@@ -98,7 +74,7 @@ svm:
   gateway:        "{{ clus.net.gateway }}"    # Replace with IP if not the same
   dns_domain:     "{{ clus.net.dns.domain | default('example.local') }}"  # Replace with IP if not the same as cluster
   dns_srvrs:      "{{ clus.net.dns.srvrs | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
-  aggrs:          "{{ clus.aggr.name }}_01_aggr1,{{ clus.aggr.name }}_02_aggr1"
+  aggrs:          "{{ clus.aggr.name }}_01_aggr1"
   aggr_list:      '[  ]'
   protocol:       nfs
   # export_policy:
@@ -109,11 +85,8 @@ svm:
   #   rw_rule:
   #   super_user_security:
 
-###
 # Authentification Defaults
 netapp_hostname:  "{{ clus.net.mgmt }}"
 netapp_username:  admin
-netapp_password:  netapp1234      # Comment out or Remove to use vars_prompt or vault password
-validate_certs:   false           # Set to bypass security error due to self-signed certs
-
-
+netapp_password:  ChangeMe!     # Comment-out or Remove to use vars_prompt or vault password
+validate_certs:   false          # Set to bypass security error due to self-signed certs
