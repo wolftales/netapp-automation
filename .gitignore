@@ -4,6 +4,7 @@
 files/*
 
 # Specific ignore list
+vars/vars_*
 */vars_vcenter_exampleLab.yml
 # *_exampleLab.yml
 # *_sandbox.yml
