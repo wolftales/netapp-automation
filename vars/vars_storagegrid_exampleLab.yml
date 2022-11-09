@@ -1,0 +1,76 @@
+###
+# StorageGRID Configuration
+###
+
+sg:
+  grid_name:              "sg"
+  admin_ip:               "192.168.7.215"
+  # admin_network_config:   'DISABLED'
+  # admin_network_name:     "VM Network"
+  # admin_netmask:          "255.255.255.0"
+  # admin_gateway:          "192.168.7.1"
+  # client_network_config:  'DISABLED'
+  # client_network_name:    "VM Network"
+  # client_netmask:         "255.255.255.0"
+  # client_gateway:         "192.168.7.1"
+  grid_network_config:    "STATIC"  # "DISABLED", "STATIC", "DHCP"
+  grid_network_name:      "DSwitch-VM Network"
+  grid_netmask:           "255.255.255.0"
+  grid_gateway:           "192.168.7.1"
+  # grid_network_name:      "GRID Network"
+  # grid_netmask:           "255.255.0.0"
+  # grid_gateway:           "172.16.7.1"
+
+###
+# StorageGRID Admin Nodes
+  admin:  # Primary
+    deploy:               true
+    # admin_netork_ip:     "192.168.7.215"
+    # client_network_ip:    "192.168.7.212"
+    # grid_network_ip:      "172.16.7.215"
+    grid_network_ip:      "192.168.7.215"
+    vm_memory_mb:         12288
+    vm_num_cpus:          1
+
+  admin2:  # Non-Primary
+    deploy:               false
+    grid_network_ip:     "192.168.7.216"
+    vm_memory_mb:         12288
+    vm_num_cpus:          4
+
+###
+# StorageGRID Gateway Node
+  gateway:
+    deploy:               true
+    # client_network_ip:    "192.168.7.217"
+    # grid_network_ip:      "172.16.7.217"
+    grid_network_ip:      "192.168.7.217"
+    vm_memory_mb:         12288
+    vm_num_cpus:          4
+
+###
+# StorageGRID Storage Nodes
+  storage1:
+    deploy:               true
+    grid_network_ip:      "192.168.7.211"
+    vm_memory_mb:         8192
+    vm_num_cpus:          1
+
+  storage2:
+    deploy:               true
+    grid_network_ip:      "192.168.7.212"
+    vm_memory_mb:         8192
+    vm_num_cpus:          1
+
+  storage3:
+    deploy:               true
+    grid_network_ip:      "192.168.7.213"
+    vm_memory_mb:         8192
+    vm_num_cpus:          1
+
+  storage4:
+    deploy:               false
+    grid_network_ip:     "192.168.7.214"
+    vm_memory_mb:         8192
+    vm_num_cpus:          1
+
