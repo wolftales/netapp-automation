@@ -5,10 +5,10 @@
   collections:
   - netapp.storagegrid
   vars_files:
-  - vars/vars_storagegrid_sg.yml
+  - vars_storagegrid_exampleLab.yml
   vars:
     input_grid: &input_grid
-      api_url:                 "{{ grid_admin_base_url }}"
+      api_url:                 "{{ grid.admin_base_url }}"
       auth_token:              "{{ auth_response.json.data }}"
       validate_certs:          false
 
@@ -16,13 +16,13 @@
 
   - name: Get GRID authorization token
     uri:
-      url:                     "{{ grid_admin_base_url }}/api/v3/authorize"
+      url:                     "{{ grid.admin_base_url }}/api/v3/authorize"
       method:                  POST
       validate_certs:          false
       body_format:             json
       body: {
-        "username":            "{{ grid_admin_username }}",
-        "password":            "{{ grid_admin_password }}",
+        "username":            "{{ grid.admin_username }}",
+        "password":            "{{ grid.admin_password }}",
         "cookie":              false,
         "csrfToken":           false
       }
