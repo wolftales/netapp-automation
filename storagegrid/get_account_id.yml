@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
-  name: "Get GRID Info"
-  gather_facts: no
+  name: "Get Tenant ID"
+  gather_facts: false
   collections:
     - netapp.storagegrid
   vars_files:
@@ -28,21 +28,6 @@
           }
       register: auth_response
 
-    # - name: Get GRID authorization token
-    #   uri:
-    #     url: "{{ grid.admin_base_url }}/api/v3/authorize"
-    #     method: POST
-    #     validate_certs: false
-    #     body_format: json
-    #     body:
-    #       {
-    #         "username": "gridadmin1",
-    #         "password": "exampleGRID",
-    #         "cookie": false,
-    #         "csrfToken": false,
-    #       }
-    #   register: auth_response
-
     - name: Get Grid INFO
       netapp.storagegrid.na_sg_grid_info:
         gather_subset:
@@ -56,17 +41,20 @@
         <<: *grid_auth
       register: grid_info_results
 
-    - name: Print GRID Response
+    - name: Print GRID-INFO Response
       debug:
         var: grid_info_results
-        # msg:
-        # - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"
 
-    # - name: Print GRID Accounts Response
-    #   debug:
-    #     msg:
-    #       # - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"
-    #       - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name | from_json }}"
+    - name: Print Tenant ID
+      debug:
+        msg:
+          # - "Tenant Name:   {{ grid_info_results.sg_info['grid/accounts'].data[0].name }}"
+          # - "Tenant ID:     {{ grid_info_results.sg_info['grid/accounts'].data[0].id }}"
+          # - "{{ item.name }}"
+          - "Tenant Name: {{ item.name }} Tenant ID: {{ item.id }}"
+      with_items:
+        - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+      when: item.name == tenant.name
 
     ###
     # Examples

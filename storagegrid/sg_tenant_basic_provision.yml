@@ -1,0 +1,194 @@
+---
+- name: "StorageGRID: Tenant Basic Provisioning"
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.storagegrid
+
+  vars_files:
+    - vars_storagegrid_exampleLab.yml
+  vars:
+    state: present
+    grid_auth: &grid_auth
+      api_url: "{{ grid.admin_base_url }}"
+      auth_token: "{{ grid_auth_response.json.data }}"
+      validate_certs: false
+    tenant_auth: &tenant_auth
+      api_url: "{{ grid.admin_base_url }}"
+      auth_token: "{{ tenant_auth_response.json.data }}"
+      validate_certs: false
+
+  tasks:
+    ###
+    # GRID Authorization Token
+    - name: Get GRID authorization token
+      uri:
+        url: "{{ grid.admin_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "username": "{{ grid.admin_username }}",
+            "password": "{{ grid.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: grid_auth_response
+
+    - name: Create a StorageGRID Tenant Account
+      netapp.storagegrid.na_sg_grid_account:
+        <<: *grid_auth
+        # api_url: "{{ grid.admin_base_url }}"
+        # auth_token: "{{ grid_auth_response.json.data }}"
+        # validate_certs: false
+        state: "{{ state }}"
+        name: "{{ tenant.name }}"
+        protocol: s3
+        management: true # Default: true - Tenant account can login to tenant portal
+        use_own_identity_source: false
+        allow_platform_services: false
+        password: "{{ tenant.admin_passwd }}"
+        update_password: on_create # Default: on_create
+        quota_size: 10 # Defaults to 'gb'
+        # quota_size_unit: gb  # Defaults to 'gb'
+      register: account
+
+    - name: Print Tenant Account Response
+      debug:
+        var: account
+
+    - name: Print Tenant Root Account ID
+      debug:
+        msg: "Tenant Admin Account ID: {{ account.resp.id }}"
+
+    ###
+    # Tenant Authorization Token
+    - name: Get Tenant Administrator user authorization token
+      uri:
+        url: "{{ grid.admin_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "accountId": "{{ account.resp.id }}",
+            "username": "{{ tenant.admin_username }}",
+            "password": "{{ tenant.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: tenant_auth_response
+
+    - name: Print Tenant AUTH Response
+      debug:
+        var: tenant_auth_response
+
+    - name: Create Tenant group
+      netapp.storagegrid.na_sg_org_group:
+        <<: *tenant_auth
+        # api_url: "{{ grid.admin_base_url }}"
+        # auth_token: "{{ auth.json.data }}"
+        # validate_certs: false
+        state: "{{ state }}"
+        display_name: "{{ tenant.name }}"
+        unique_name: "group/{{ tenant.name }}"
+        management_policy:
+          manage_all_containers: true
+          manage_endpoints: true
+          manage_own_s3_credentials: false
+          root_access: false
+        s3_policy:
+          {
+            "Statement":
+              [
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:*",
+                  "Resource": "arn:aws:s3:::*",
+                },
+              ],
+          }
+
+    - name: Create Tenant users
+      netapp.storagegrid.na_sg_org_user:
+        <<: *tenant_auth
+        # api_url: "{{ grid.admin_base_url }}"
+        # auth_token: "{{ auth.json.data }}"
+        # validate_certs: false
+        state: "{{ state }}"
+        full_name: "{{ item }}"
+        unique_name: "user/{{ item }}"
+        password: "{{ tenant.users_passwd }}"
+        update_password: on_create # Default: on_create
+        disable: false
+        member_of: "group/{{ tenant.name }}"
+
+      with_items: "{{ tenant.users }}"
+      no_log: false
+
+    - name: Create a s3 key for our users
+      netapp.storagegrid.na_sg_org_user_s3_key:
+        <<: *tenant_auth
+        # api_url: "{{ grid.admin_base_url }}"
+        # auth_token: "{{ auth.json.data }}"
+        # validate_certs: false
+        state: "{{ state }}"
+        unique_user_name: "user/{{ item }}"
+
+      with_items: "{{ tenant.users }}"
+      register: s3_cred
+
+    - name: Print Varible
+      debug:
+        var: s3_cred
+
+    - name: Check folder for storing credentials
+      stat:
+        path: "../files/s3_keys/{{ tenant.name }}"
+      register: s3cred_folder
+
+    - name: Create directory if it does not exist
+      file:
+        path: "../files/s3_keys/{{ tenant.name }}"
+        state: directory
+        mode: 0644
+
+      when: not s3cred_folder.stat.exists
+
+    - name: Print s3_creds Information
+      debug:
+        # var:  item
+        msg:
+          - "Everything:    {{ item }}"
+          - "Filename:      {{ item.item }}"
+          - "File content:  {{ item.resp }}"
+        # msg: "{{ (s3_cred.stdout | from_json) }}"
+        # msg:
+        # - "GRID Name:               {{ grid_info_results.sg_info['grid/health/topology'].data.name }}"
+      # with_item
+      with_items: "{{ s3_cred.results }}"
+
+    - name: Write credentials to file
+      copy:
+        content: "{{ item.resp }}"
+        dest: "../files/s3_keys/{{ tenant.name }}/{{ item.item }}"
+        # force: false
+        mode: 0644
+
+      with_items: "{{ s3_cred.results }}"
+      # - "{{ s3_cred.results }}"
+      # - "{{ tenant.users }}"
+      # with_items: "{{ tenant.users }}"
+      # when: item.1 in s3_cred.results
+
+    - name: Create a s3 bucket
+      netapp.storagegrid.na_sg_org_container:
+        <<: *tenant_auth
+        # api_url: "{{ grid.admin_base_url }}"
+        # auth_token: "{{ auth.json.data }}"
+        # validate_certs: false
+        state: "{{ state }}"
+        name: "{{ tenant.bucket }}" # name must contain only the following characters: [a-z0-9-.]
+        s3_object_lock_enabled: false
+        bucket_versioning_enabled: false

@@ -1,0 +1,97 @@
+---
+- name: "StorageGRID: Tenant Basic Provisioning"
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.storagegrid
+
+  vars_files:
+    - vars_storagegrid_exampleLab.yml
+  vars:
+    state: present
+    grid_auth: &grid_auth
+      api_url: "{{ grid.admin_base_url }}"
+      auth_token: "{{ grid_auth_response.json.data }}"
+      validate_certs: false
+    tenant_auth: &org_auth
+      api_url: "{{ grid.admin_base_url }}"
+      auth_token: "{{ tenant_auth_response.json.data }}"
+      validate_certs: false
+
+  tasks:
+    ###
+    # GRID Authorization Token
+    - name: Get GRID authorization token
+      uri:
+        url: "{{ grid.admin_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "username": "{{ grid.admin_username }}",
+            "password": "{{ grid.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: grid_auth_response
+
+    ###
+    # Tenant Account ID
+    - name: Get Grid Tenant INFO
+      netapp.storagegrid.na_sg_grid_info:
+        gather_subset:
+          - grid/accounts
+        <<: *grid_auth
+      register: json_response
+
+    # - name: Print Tenant ID
+    #   debug:
+    #     msg: "Tenant Name: {{ item.name }} Tenant ID: {{ item.id }}"
+    #   with_items:
+    #     - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+    #   when: item.name == tenant.name
+
+    # - name: Print Varible
+    #   ansible.builtin.debug:
+    #     var: json_response
+
+    - name: Set Tenant Account ID
+      set_fact:
+        tenant_id: "{{ item.id }}"
+      loop: "{{ json_response.sg_info['grid/accounts'].data }}"
+      when:
+        - item.name == tenant.name
+
+    # - name: Print Varible
+    #   ansible.builtin.debug:
+    #     var: tenantId
+
+    ###
+    # Tenant Authorization Token
+    - name: Get Tenant Administrator user authorization token
+      uri:
+        url: "{{ grid.admin_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "accountId": "{{ tenant_id }}",
+            "username": "{{ tenant.admin_username }}",
+            "password": "{{ tenant.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: tenant_auth_response
+
+    - name: Get ORG Info
+      netapp.storagegrid.na_sg_org_info:
+        gather_subset:
+          - all
+        <<: *org_auth
+      register: grid_info_results
+
+    - name: Print GRID Response
+      debug:
+        var: grid_info_results

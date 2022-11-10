@@ -5,24 +5,37 @@
 grid:
   admin_base_url:        https://192.168.7.215
   admin_username:        root
-  admin_password:        exampleGRID
-  passphrase:            exampleLab
+  admin_passwd:          netapp1234
+  passphrase:            netapp1234
 
 ###
 # StorageGRID Configuration Varibles
-#   dns_srvs: 192.168.7.3,8.8.8.8,8.8.4.4
-#   ntp_srvs: '216.239.35.0,168.61.215.74,17.253.2.125'  # time.google.com,time.windows.com,time.apple.com
+  dns_srvs:   192.168.7.3,8.8.8.8,8.8.4.4    # exampleLab DNS, google's DNS
+  ntp_srvs:   216.239.35.0,168.61.215.74,17.253.2.125,132.163.96.3  # time.google.com,time.windows.com,time.apple.com,time.nist.gov
 
 # ###
 #  StorageGRID Administrative Users
-#   admin_group: gridadmins
-#   admin_non_root:
-#   - gridadmin1
-#   - gridadmin2
-#   - gridadmin3
-#   admin_non_root_password: exampleGRID
+  admin_group: gridadmins
+  admin_non_root:
+  - gridadmin1
+  - gridadmin2
+  - gridadmin3
+  admin_non_root_passwd: exampleGRID
 
 ###
+# Tenant Management Workflow
+tenant: 
+# Tenant: Basic Provisioning Workflow
+  desc:             'Application: AppID01 Tenant Resources'
+  name:             AppID01
+  admin_username:   root
+  admin_passwd:     netapp1234
+  users:
+  - service_account
+  - UserID
+  users_passwd:     ChangeMe1!
+  bucket:           appid01-01
+
 # Tenant: Fabric Pool Configuration
 # tenant:
 #   desc: 'Fabric Pool Group'

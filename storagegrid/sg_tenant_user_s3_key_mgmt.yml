@@ -1,0 +1,102 @@
+---
+- name: "StorageGRID: User S3 Key Management"
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.storagegrid
+
+  vars_files:
+    - vars_storagegrid_exampleLab.yml
+  vars:
+    state: present
+    api_base_url: https://192.168.7.215
+    tenant_name: App01
+    tenant_id: '46888032350078966590'
+    tenant_admin_username: root
+    tenant_admin_passwd: netapp1234
+    tenant_user_name: service_account
+    tenant_user_key: W1LGN9D0CEEHQDSIUT9L
+    # tenant_user_passwd: ChangeMe1!
+    tenant_auth: &org_auth
+      api_url: "{{ api_base_url }}"
+      auth_token: "{{ tenant_auth_response.json.data }}"
+      validate_certs: false
+
+  tasks:
+
+    ###
+    # Tenant Authorization Token
+    - name: Get Tenant Administrator user authorization token
+      uri:
+        url: "{{ api_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "accountId": "{{ tenant_id }}",
+            "username": "{{ tenant_admin_username }}",
+            "password": "{{ tenant_admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: tenant_auth_response
+
+    # Test to ensure above is working
+    # - name: Get ORG Info
+    #   netapp.storagegrid.na_sg_org_info:
+    #     gather_subset:
+    #       - all
+    #     <<: *org_auth
+    #   register: grid_info_results
+
+    # - name: Print GRID Response
+    #   debug:
+    #     var: grid_info_results
+
+    - name: Create a s3 key for our users
+      netapp.storagegrid.na_sg_org_user_s3_key:
+        <<: *org_auth
+
+        state: "{{ state }}"
+        unique_user_name: "user/{{ item }}"
+
+      with_items: "{{ tenant_user_name }}"
+      register: s3_cred
+      when: state == "present"
+
+    - name: Delete a s3 key for our users
+      netapp.storagegrid.na_sg_org_user_s3_key:
+        <<: *org_auth
+
+        state: "{{ state }}"
+        unique_user_name: "user/{{ item }}"
+        access_key: "{{ tenant_user_key }}"
+
+      with_items: "{{ tenant_user_name }}"
+      register: s3_cred
+      when: state == "absent"
+
+    - name: Check folder for storing credentials
+      stat:
+        path: "../files/s3_keys/{{ tenant_name }}"
+      register: s3cred_folder
+      when: state is present
+
+    - name: Create directory if it does not exist
+      file:
+        path: "../files/s3_keys/{{ tenant_name }}"
+        state: directory
+        mode: 0644
+
+      when: not s3cred_folder.stat.exists and state is 'present'
+
+    - name: Write credentials to file
+      copy:
+        content: "{{ item.resp }}"
+        dest: "../files/s3_keys/{{ tenant.name }}/{{ item.item }}{{ ansible_date_time.iso8601 }}"
+        # force: false
+        mode: 0644
+
+      with_items: "{{ s3_cred.results }}"
+      when: item.item == tenant_user_name and state == 'present'

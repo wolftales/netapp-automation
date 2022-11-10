@@ -1,0 +1,68 @@
+---
+- hosts: localhost
+  name: "Get GRID Info"
+  gather_facts: no
+  collections:
+  - netapp.storagegrid
+  vars_files:
+  - vars_storagegrid_exampleLab.yml
+  vars:
+    tenant_auth: &tenant_auth
+      api_url:                  "{{ grid.admin_base_url }}"
+      auth_token:               "{{ tenant_auth_response.json.data }}"
+      validate_certs:           false
+
+  tasks:
+
+  ###
+  # Tenant Authorization Token
+  - name: Get Tenant Administrator user authorization token
+    uri:
+      url: "{{ grid.admin_base_url }}/api/v3/authorize"
+      method: POST
+      validate_certs: false
+      body_format: json
+      body:
+        {
+          "username": "{{ tenant.admin_username }}",
+          "password": "{{ tenant.admin_passwd }}",
+          "cookie": false,
+          "csrfToken": false,
+        }
+    register: tenant_auth_response
+
+  - name: Get Grid INFO
+    netapp.storagegrid.na_sg_org_info:
+      gather_subset:
+      # - all
+      - org/containers
+      - org/users
+      <<: *tenant_auth
+    register: org_info_results
+
+  ##
+  # Validate contents of var: Tenant Users
+  ##
+
+  - debug:
+      msg: "{{ org_info_results }}"
+
+    # Display Select(relevant) Informaiton from Performance Service Levels (PSLs)
+    # - debug:
+    #     msg:
+    #       {
+    #         "PSL Name":                   "{{ item.name }}",
+    #         "PSL Description":            "{{ item.description }}",
+    #         "PSL SLA (Expected)":         "{{ item.iops.expected_iops_per_tb }}",
+    #         "PSL SLO (Peak)":             "{{ item.iops.peak_iops_per_tb }}",
+    #         "PSL MIN IOPs":               "{{ item.iops.absolute_min_iops }}",
+    #         "PSL Peak Allocation Policy": "{{ item.iops.peak_iops_allocation_policy }}",
+    #         "PSL Latency":                "{{ item.latency }}",
+    #         "PSL Syste-Defined":          "{{ item.system_defined }}"
+    #       }
+    #   name: 'Display API GET PSL results'
+
+    #   loop: "{{ org_info_results.json.records }}"
+    #   loop_control:
+    #     label: "{{ item.name }}"
+      # when:  item.system_defined == true
