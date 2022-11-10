@@ -1,11 +1,12 @@
 ---
 - hosts: localhost
-  name: "Get Tenant ID"
+  name: "Get Tenant Account ID from GRID-INFO Byname"
   gather_facts: false
   collections:
     - netapp.storagegrid
   vars_files:
-    - vars_storagegrid_exampleLab.yml
+    - vars/vars_sg_exampleLab.yml
+    - vars/vars_sg_tenant_appid01.yml
   vars:
     grid_auth: &grid_auth
       api_url: "{{ grid.admin_base_url }}"
@@ -13,6 +14,8 @@
       validate_certs: false
 
   tasks:
+  ###
+  # GRID API Authorization Token
     - name: Get GRID authorization token
       uri:
         url: "{{ grid.admin_base_url }}/api/v3/authorize"
@@ -28,6 +31,8 @@
           }
       register: auth_response
 
+  ###
+  # GRID INFO Collection
     - name: Get Grid INFO
       netapp.storagegrid.na_sg_grid_info:
         gather_subset:
@@ -41,11 +46,15 @@
         <<: *grid_auth
       register: grid_info_results
 
-    - name: Print GRID-INFO Response
-      debug:
-        var: grid_info_results
+  ###
+  # Debug: Print GRID-INFO Response
+    # - name: Print GRID-INFO Response
+    #   debug:
+    #     var: grid_info_results
 
-    - name: Print Tenant ID
+  ###
+  # Debug: Print Tenant Account ID Byname 
+    - name: "Print Tenant ID for {{ tenant.name }}"
       debug:
         msg:
           # - "Tenant Name:   {{ grid_info_results.sg_info['grid/accounts'].data[0].name }}"
