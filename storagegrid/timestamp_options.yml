@@ -1,0 +1,56 @@
+---
+- hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.storagegrid
+
+  vars_files:
+    # - vars_storagegrid_exampleLab.yml
+  vars:
+    state: present
+
+  tasks:
+
+  ###
+  # Timestamp Testing
+    # requires 'gather_facts'
+    # - set_fact:
+    #     facts_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+    # - debug:
+    #     msg: "from facts: {{ facts_timestamp }}"
+
+    - set_fact:
+        pipe_timestamp: "{{ lookup('pipe', 'date +%Y%m%dT%H%M%S') }}"
+    - debug:
+        msg: "from pipe: {{pipe_timestamp}}"
+
+    - name: Ansible date fact example
+      debug:
+        var: ansible_date_time.date
+
+  ###
+  # File Creation with timestamp
+
+    # - name: Check folder for storing credentials
+    #   stat:
+    #     path: "../files/s3_keys/{{ tenant_name }}"
+    #   register: s3cred_folder
+    #   when: state is present
+
+    # - name: Create directory if it does not exist
+    #   file:
+    #     path: "../files/s3_keys/{{ tenant_name }}"
+    #     state: directory
+    #     mode: 0644
+
+    #   when: not s3cred_folder.stat.exists and state is 'present'
+
+    # - name: Write credentials to file
+    #   copy:
+    #     content: "{{ item.resp }}"
+    #     dest: "../files/s3_keys/{{ tenant.name }}/{{ item.item }}{{ ansible_date_time.iso8601 }}"
+    #     # force: false
+    #     mode: 0644
+
+    #   with_items: "{{ s3_cred.results }}"
+    #   when: item.item == tenant_user_name and state == 'present'
