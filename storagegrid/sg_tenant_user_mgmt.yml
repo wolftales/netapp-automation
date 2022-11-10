@@ -1,0 +1,88 @@
+###
+# StorageGRID: Tenant User Management
+# Requirements:
+#  - Tenant Administrator - Can't be  done by normal user
+#  - Tenant Account ID
+#  - tenant user name & access_key required for deletion
+#  - 
+#  - 
+###---
+- name: "StorageGRID: Tenant User Management"
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.storagegrid
+
+  vars_files:
+    - vars/vars_sg_exampleLab.yml
+    - vars/vars_sg_tenant_creds.yml
+    # - vars/vars_sg_tenant_users.yml
+  vars:
+    state: present
+    api_base_url:           https://192.168.7.215
+
+    tenant_name:            App01
+    tenant_id:              '46888032350078966590'
+    tenant_admin_username:  
+    tenant_admin_passwd:    
+    tenant_user_name:       
+    tenant_user_key:        
+    tenant_user_passwd:      
+
+    tenant_auth: &org_auth
+      api_url:        "{{ api_base_url }}"
+      auth_token:     "{{ tenant_auth_response.json.data }}"
+      validate_certs: false
+
+  tasks:
+
+    ###
+    # Tenant Authorization Token
+    - name: Get Tenant Administrator user authorization token
+      uri:
+        url: "{{ api_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "accountId":  "{{ tenant_id }}",
+            "username":   "{{ tenant_admin_username }}",
+            "password":   "{{ tenant_admin_passwd }}",
+            "cookie":     false,
+            "csrfToken":  false,
+          }
+      register: tenant_auth_response
+
+    ###
+    # Debug: Test ORG-AUTH & ORG-INFO is working
+    ###
+    # # ORG-INFO - ALL
+    # - name: Get ORG Info
+    #   netapp.storagegrid.na_sg_org_info:
+    #     gather_subset:
+    #       - all
+    #     <<: *org_auth
+    #   register: grid_info_results
+
+    # # DEBUG: PPrint ORG-INFO Response
+    # - name: Print GRID Response
+    #   debug:
+    #     var: grid_info_results
+
+    ###
+    # ASDF
+    - name: Create Tenant users
+      netapp.storagegrid.na_sg_org_user:
+        <<: *org_auth
+
+        state: "{{ state }}"
+        full_name: "{{ tenant.user }}"
+        unique_name: "user/{{ tenant.full_name }}"
+        password: "{{ tenant.user_passwd }}"
+        update_password: "{{ tenant.update_password }}" # Default: on_create
+        disable: "{{ tenant.disable }}"
+        member_of: "group/{{ tenant.name }}"
+
+      # with_items: "{{ tenant.user }}"
+      no_log: false

@@ -5,11 +5,18 @@
   collections:
     - netapp.storagegrid
   vars_files:
-    - vars/vars_sg_exampleLab.yml
-    - vars/vars_sg_tenant_appid01.yml
+    # - vars/vars_sg_exampleLab.yml
+    # - vars/vars_sg_tenant_appid01.yml
   vars:
+    grid:
+      api_base_url:   https://192.168.7.215
+      admin_username: root
+      admin_passwd:   netapp1234
+    tenant:
+      # name: AppID01
+      name: appid01
     grid_auth: &grid_auth
-      api_url: "{{ grid.admin_base_url }}"
+      api_url: "{{ grid.api_base_url }}"
       auth_token: "{{ auth_response.json.data }}"
       validate_certs: false
 
@@ -18,7 +25,7 @@
   # GRID API Authorization Token
     - name: Get GRID authorization token
       uri:
-        url: "{{ grid.admin_base_url }}/api/v3/authorize"
+        url: "{{ grid.api_base_url }}/api/v3/authorize"
         method: POST
         validate_certs: false
         body_format: json
@@ -35,15 +42,10 @@
   # GRID INFO Collection
     - name: Get Grid INFO
       netapp.storagegrid.na_sg_grid_info:
+        <<: *grid_auth
         gather_subset:
           # - all
-          # - versions
           - grid/accounts
-          # - grid/health/topology
-          # - grid/config/product-version
-          # - grid/users/root
-          # - grid/users
-        <<: *grid_auth
       register: grid_info_results
 
   ###

@@ -8,7 +8,7 @@
   - vars_storagegrid_exampleLab.yml
   vars:
     grid_auth: &grid_auth
-      api_url:                 "{{ grid.admin_base_url }}"
+      api_url:                 "{{ grid.api_base_url }}"
       auth_token:              "{{ auth_response.json.data }}"
       validate_certs:          false
 
@@ -16,7 +16,7 @@
 
   - name: Get GRID authorization token
     uri:
-      url:                     "{{ grid.admin_base_url }}/api/v3/authorize"
+      url:                     "{{ grid.api_base_url }}/api/v3/authorize"
       method:                  POST
       validate_certs:          false
       body_format:             json

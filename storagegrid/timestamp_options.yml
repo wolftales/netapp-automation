@@ -22,11 +22,11 @@
     - set_fact:
         pipe_timestamp: "{{ lookup('pipe', 'date +%Y%m%dT%H%M%S') }}"
     - debug:
-        msg: "from pipe: {{pipe_timestamp}}"
+        msg: "from pipe: {{ pipe_timestamp }}"
 
-    - name: Ansible date fact example
-      debug:
-        var: ansible_date_time.date
+    # - name: Ansible date fact example
+    #   debug:
+    #     var: ansible_date_time.date
 
   ###
   # File Creation with timestamp
