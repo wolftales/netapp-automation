@@ -62,7 +62,7 @@
     #     <<: *org_auth
     #   register: grid_info_results
 
-    # DEBUG: PPrint ORG-INFO Response
+    # DEBUG: Print ORG-INFO Response
     # - name: Print GRID Response
     #   debug:
     #     var: grid_info_results

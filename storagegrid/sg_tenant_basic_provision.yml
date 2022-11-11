@@ -54,13 +54,13 @@
         # quota_size_unit: gb  # Defaults to 'gb'
       register: account
 
-    - name: Print Tenant Account Response
-      debug:
-        var: account
+    # - name: Print Tenant Account Response
+    #   debug:
+    #     var: account
 
-    - name: Print Tenant Root Account ID
-      debug:
-        msg: "Tenant Admin Account ID: {{ account.resp.id }}"
+    # - name: Print Tenant Root Account ID
+    #   debug:
+    #     msg: "Tenant Admin Account ID: {{ account.resp.id }}"
 
     ###
     # Tenant Authorization Token

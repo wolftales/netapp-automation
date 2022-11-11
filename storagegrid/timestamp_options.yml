@@ -13,20 +13,13 @@
 
   ###
   # Timestamp Testing
-    # requires 'gather_facts'
-    # - set_fact:
-    #     facts_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
-    # - debug:
-    #     msg: "from facts: {{ facts_timestamp }}"
-
-    - set_fact:
+    - name: 'Create Varible for timestamp'
+      set_fact:
         pipe_timestamp: "{{ lookup('pipe', 'date +%Y%m%dT%H%M%S') }}"
-    - debug:
-        msg: "from pipe: {{ pipe_timestamp }}"
 
-    # - name: Ansible date fact example
-    #   debug:
-    #     var: ansible_date_time.date
+    - name: 'DEBUG: Print Varible: timestamp'
+      debug:
+        msg: "from pipe: {{ pipe_timestamp }}"
 
   ###
   # File Creation with timestamp
@@ -48,7 +41,7 @@
     # - name: Write credentials to file
     #   copy:
     #     content: "{{ item.resp }}"
-    #     dest: "../files/s3_keys/{{ tenant.name }}/{{ item.item }}{{ ansible_date_time.iso8601 }}"
+    #     dest: "../files/s3_keys/{{ tenant.name }}/{{ item.item }}{{ pipe_timestamp }}"
     #     # force: false
     #     mode: 0644
 

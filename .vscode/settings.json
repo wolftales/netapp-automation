@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json#/$defs/playbook": "file:///mnt/c/Users/wolft/OneDrive/Documents/GitHub/netapp-automation/storagegrid/sg_grid_basic_config.yml"
+    }
+}
