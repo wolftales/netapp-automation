@@ -1,12 +1,17 @@
 ###
 # StorageGRID: Tenant User Management
+# Description:
+# Creates / Modifies / Deletes both administrative & end-user accounts
+# 
 # Requirements:
 #  - Tenant Administrator - Can't be  done by normal user
 #  - Tenant Account ID
 #  - tenant user name & access_key required for deletion
 #  - 
 #  - 
-###---
+#  - 
+###
+---
 - name: "StorageGRID: Tenant User Management"
   hosts: localhost
   gather_facts: false
@@ -18,7 +23,7 @@
     - vars/vars_sg_tenant_creds.yml
     # - vars/vars_sg_tenant_users.yml
   vars:
-    state: present
+    state:                  present
     api_base_url:           https://192.168.7.215
 
     tenant_name:            App01
@@ -28,7 +33,8 @@
     tenant_user_name:       
     tenant_user_key:        
     tenant_user_passwd:      
-
+    ###
+    # Tenant Authentication Bearer Token 
     tenant_auth: &org_auth
       api_url:        "{{ api_base_url }}"
       auth_token:     "{{ tenant_auth_response.json.data }}"
