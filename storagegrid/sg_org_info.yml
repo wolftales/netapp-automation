@@ -127,8 +127,11 @@
   - name: Get ORG Info
     netapp.storagegrid.na_sg_org_info:
       gather_subset:
-      - all
+      # - all
       # - org/containers
+      - org/usage
+      - org/groups
+      - org/users
       # - org/users/root
       <<: *org_auth
     register: grid_info_results

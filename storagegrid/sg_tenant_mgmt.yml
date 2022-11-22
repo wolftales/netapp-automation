@@ -60,7 +60,7 @@
           {
             "username": "{{ grid.admin_username }}",
             "password": "{{ grid.admin_passwd }}",
-            "cookie": false,
+            "cookie":   false,
             "csrfToken": false,
           }
       register: auth_response
@@ -147,9 +147,9 @@
         body_format: json
         body:
           {
-            "accountId": "{{ tenant_id }}",
-            "username": "{{ tenant.admin_username }}",
-            "password": "{{ tenant.admin_passwd }}",
+            "accountId":  "{{ tenant.id }}",
+            "username":   "{{ tenant.admin_username }}",
+            "password":   "{{ tenant.admin_passwd }}",
             "cookie": false,
             "csrfToken": false,
           }

@@ -1,5 +1,5 @@
 ###
-# StorageGRID: Tenant User Management
+# StorageGRID: Tenant Group Management
 # Description:
 # Creates / Modifies / Deletes both administrative & end-user accounts
 # 
@@ -7,7 +7,7 @@
 #  - Tenant Administrator - Can't be  done by normal user
 #  - Tenant Account ID Required - no GRID admin override
 #  - Tenant user name & access_key required for deletion
-#  - Group needs to already exist
+#  - 
 #  - 
 #  - 
 ###
@@ -20,10 +20,9 @@
 
   vars_files:
     # - vars/vars_sg_exampleLab.yml
-    # - vars/vars_sg_tenant_creds.yml
-    # - vars/vars_sg_tenant_users.yml
     # - vars/vars_sg_tenant_appid01.yml
-    - vars/vars_sg_tenant_users_appid01.yml
+    - vars/vars_sg_tenant_group_appid01.yml
+    # - vars/vars_sg_tenant_users_appid01.yml
 
   vars:
     state:            present
@@ -83,51 +82,32 @@
     #     var: grid_info_results
 
     ###
-    # Create Tenant Users
-    - name: Create Multiple Tenant users with independant settings
-      netapp.storagegrid.na_sg_org_user:
+    # Create Tenant Group
+    - name: Create Tenant group
+      netapp.storagegrid.na_sg_org_group:
         <<: *org_auth
+ 
+        state:                        "{{ state }}"
+        display_name:                 "{{ group.name }}"
+        unique_name:                  "group/{{ group.name }}"
+        management_policy:
+          manage_all_containers:      "{{ group.mgmt_pol.all_containers }}"
+          manage_endpoints:           "{{ group.mgmt_pol.endpoints }}"
+          manage_own_s3_credentials:  "{{ group.mgmt_pol.mgmt_own_s3_creds }}"
+          root_access:                "{{ group.mgmt_pol.root_access }}"
+        s3_policy:                    "{{ group.s3_policy }}"
 
-        state:            "{{ state }}"
-        full_name:        "{{ item.name }}"
-        unique_name:      "user/{{ item.name }}"
-        password:         "{{ item.passwd }}"
-        update_password:  "{{ item.update_password }}" # Default: on_create
-        disable:          "{{ item.disable }}"
-        member_of:        "group/{{ tenant.name }}"
-
-      with_items:         "{{ users.user_list }}"
-      no_log: false
-      when: users.user_list and users.user_list != None
-
-    - name: Create Multiple Tenant users with common settings
-      netapp.storagegrid.na_sg_org_user:
-        <<: *org_auth
-
-        state:            "{{ state }}"
-        full_name:        "{{ item }}"
-        unique_name:      "user/{{ item }}"
-        password:         "{{ users.passwd }}"
-        update_password:  "{{ users.update_passwd }}" # Default: on_create
-        disable:          "{{ users.disable }}"
-        member_of:        "group/{{ tenant.name }}"
-
-      with_items:         "{{ users.users }}"
-      no_log: false
-      when: users.users and users.users != None
-
-    - name: Create a Single Tenant user
-      netapp.storagegrid.na_sg_org_user:
-        <<: *org_auth
-
-        state:            "{{ state }}"
-        full_name:        "{{ users.user }}"
-        unique_name:      "user/{{ users.user }}"
-        password:         "{{ users.passwd }}"
-        update_password:  "{{ users.update_passwd }}" # Default: on_create
-        disable:          "{{ users.disable }}"
-        member_of:        "group/{{ tenant.name }}"
-
-      # with_items:         "{{ users.user }}"
-      no_log: false
-      when: users.user and users.user != None
+      # - name: EXAMPLE - create a group
+      #   netapp.storagegrid.na_sg_org_group:
+      #     api_url: "https://<storagegrid-endpoint-url>"
+      #     auth_token: "storagegrid-auth-token"
+      #     validate_certs: false
+      #     state: present
+      #     display_name: ansiblegroup1
+      #     unique_name: group/ansiblegroup1
+      #     management_policy:
+      #       manage_all_containers: true
+      #       manage_endpoints: true
+      #       manage_own_s3_credentials: false
+      #       root_access: false
+      #     s3_policy: {"Statement":[{"Effect":"Deny","Action":"s3:*","Resource":"arn:aws:s3:::*"}]}
