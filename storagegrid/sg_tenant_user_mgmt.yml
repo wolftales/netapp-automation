@@ -19,24 +19,33 @@
     - netapp.storagegrid
 
   vars_files:
-    - vars/vars_sg_exampleLab.yml
-    - vars/vars_sg_tenant_creds.yml
+    # - vars/vars_sg_exampleLab.yml
+    # - vars/vars_sg_tenant_creds.yml
     # - vars/vars_sg_tenant_users.yml
-  vars:
-    state:                  present
-    api_base_url:           https://192.168.7.215
+    - vars/vars_sg_tenant_appid01.yml
 
-    tenant_name:            App01
-    tenant_id:              '46888032350078966590'
-    tenant_admin_username:  
-    tenant_admin_passwd:    
-    tenant_user_name:       
-    tenant_user_key:        
-    tenant_user_passwd:      
+  vars:
+    state:            present
+    grid:
+      api_base_url:   https://192.168.7.215
+      # admin_username: root
+      # admin_passwd:   netapp1234
+    tenant:
+      name:           AppID01
+      tenant.id:      '38493884429242321796'  # Enter account_id if not looking up byname && find_tenant_id == false
+ 
+    # find_tenant_id:   false  # Set to true to enable tenant_id lookup byname
+       
     ###
-    # Tenant Authentication Bearer Token 
+    # Authentication Bearer Tokens 
+    # Grid Authorization Token
+    # grid_auth: &grid_auth
+    #   api_url:        "{{ grid.api_base_url }}"
+    #   auth_token:     "{{ auth_response.json.data }}"
+    #   validate_certs: false
+    # Tenant Authorization Token
     tenant_auth: &org_auth
-      api_url:        "{{ api_base_url }}"
+      api_url:        "{{ grid.api_base_url }}"
       auth_token:     "{{ tenant_auth_response.json.data }}"
       validate_certs: false
 
@@ -52,9 +61,9 @@
         body_format: json
         body:
           {
-            "accountId":  "{{ tenant_id }}",
-            "username":   "{{ tenant_admin_username }}",
-            "password":   "{{ tenant_admin_passwd }}",
+            "accountId":  "{{ tenant.id }}",
+            "username":   "{{ tenant.admin_username }}",
+            "password":   "{{ tenant.admin_passwd }}",
             "cookie":     false,
             "csrfToken":  false,
           }
@@ -78,17 +87,34 @@
 
     ###
     # ASDF
-    - name: Create Tenant users
+    - name: Create Multiple Tenant users
       netapp.storagegrid.na_sg_org_user:
         <<: *org_auth
 
-        state: "{{ state }}"
-        full_name: "{{ tenant.user }}"
-        unique_name: "user/{{ tenant.full_name }}"
-        password: "{{ tenant.user_passwd }}"
-        update_password: "{{ tenant.update_password }}" # Default: on_create
-        disable: "{{ tenant.disable }}"
-        member_of: "group/{{ tenant.name }}"
+        state:            "{{ state }}"
+        full_name:        "{{ item.user }}"
+        unique_name:      "user/{{ item.full_name }}"
+        password:         "{{ item.user_passwd }}"
+        update_password:  "{{ item.update_password }}" # Default: on_create
+        disable:          "{{ item.disable }}"
+        member_of:        "group/{{ tenant.name }}"
 
-      # with_items: "{{ tenant.user }}"
+      with_items:         "{{ tenant.user_list }}"
       no_log: false
+      when: tenant.user_list is Defined and tenant.user_list is not None
+    
+    - name: Create a Single Tenant user
+      netapp.storagegrid.na_sg_org_user:
+        <<: *org_auth
+
+        state:            "{{ state }}"
+        full_name:        "{{ tenant.user }}"
+        unique_name:      "user/{{ tenant.full_name }}"
+        password:         "{{ tenant.user_passwd }}"
+        update_password:  "{{ tenant.update_password }}" # Default: on_create
+        disable:          "{{ tenant.disable }}"
+        member_of:        "group/{{ tenant.name }}"
+
+      with_items:         "{{ tenant.user }}"
+      no_log: false
+      when: tenant.user_list is not Defined and tenant.user_list is None

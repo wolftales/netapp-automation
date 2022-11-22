@@ -139,3 +139,44 @@
     debug:
       var: grid_info_results
 
+  ###
+  # Debug: Print Containers within Tenant
+  - name: "Print Containers for {{ tenant.name }}"
+    debug:
+      msg:
+      - "Container Instance:  {{ index }}"
+      - "Bucket Name:         {{ item.name }}"
+      # - "Bytes: {{ item.[index].dataBytes }}"
+      # - "Bytes: {{ grid_info_results.sg_info['org/containers'].data.[index].dataBytes }}"
+      # - "Object Count: {{ grid_info_results.sg_info['org/containers'].data.[index].objectCount }}"
+      
+      # - "Bucket Name: {{ item.name }} - dataBytes: {{ item.dataBytes }} objectCount: {{ item.objectCount }}"
+    with_items:
+      - "{{ grid_info_results.sg_info['org/containers'].data }}"
+    loop_control:
+      # label: "{{ item.name }}"
+      label: ''
+      index_var: index
+  
+  ###
+  # DEBUG Example 
+
+    # Display Select(relevant) Informaiton from Performance Service Levels (PSLs)
+    # - debug:
+    #     msg:
+    #       {
+    #         "PSL Name":                   "{{ item.name }}",
+    #         "PSL Description":            "{{ item.description }}",
+    #         "PSL SLA (Expected)":         "{{ item.iops.expected_iops_per_tb }}",
+    #         "PSL SLO (Peak)":             "{{ item.iops.peak_iops_per_tb }}",
+    #         "PSL MIN IOPs":               "{{ item.iops.absolute_min_iops }}",
+    #         "PSL Peak Allocation Policy": "{{ item.iops.peak_iops_allocation_policy }}",
+    #         "PSL Latency":                "{{ item.latency }}",
+    #         "PSL Syste-Defined":          "{{ item.system_defined }}"
+    #       }
+    #   name: 'Display API GET PSL results'
+
+    #   loop: "{{ org_info_results.json.records }}"
+    #   loop_control:
+    #     label: "{{ item.name }}"
+    #   when:  item.system_defined == true

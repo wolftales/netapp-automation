@@ -122,14 +122,11 @@
   #   debug:
   #     msg: "Authorization Bearer Token: {{ tenant_auth_response.json.data }}"
 
-  ###
-  # OGR-INFO Get: ALL
   - name: Get ORG Info
     netapp.storagegrid.na_sg_org_info:
       gather_subset:
-      - all
-      # - org/containers
-      # - org/users/root
+      # - all
+      - org/containers
       <<: *org_auth
     register: grid_info_results
 
@@ -138,4 +135,40 @@
   - name: Print GRID Response
     debug:
       var: grid_info_results
+
+  - name: Get ORG Info
+    netapp.storagegrid.na_sg_org_info:
+      gather_subset:
+      # - all
+      - org/users/root
+      <<: *org_auth
+    register: grid_info_results
+
+  - name: Print GRID Response
+    debug:
+      var: grid_info_results
+
+  # - name: Print GRID details
+  #   debug:
+  #     msg:
+  #     - "GRID Name:               {{ grid_info_results.sg_info['grid/health/topology'].data.name }}"
+  #     - "StorageGRID Version:     {{ grid_info_results.sg_info['grid/config/product-version'].data.productVersion }}"
+
+  # - name: Print GRID nodes
+  #   debug:
+  #     msg:
+  #     - "Data Center:        {{ item.0.name }}"
+  #     - "Node Name:          {{ item.1.name }}"
+  #     - "Node Type:          {{ item.1.type }}"
+  #   with_subelements:
+  #   - "{{ grid_info_results.sg_info['grid/health/topology'].data.children }}"
+  #   - children
+  #   loop_control:
+  #     label: "{{ item.0.name }} - {{ item.1.name }}"
+
+  # - name: Print GRID Response
+  #   debug:
+  #     var: grid_info_results
+  #     # msg:
+  #     # - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"
 

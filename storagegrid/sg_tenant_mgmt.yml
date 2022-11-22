@@ -29,8 +29,9 @@
       admin_passwd:   netapp1234
     tenant:
       name:           AppID01
-    tenant_id:              # Enter account_id if not looking up byname
+    
     find_tenant_id:   true  # Set to true to enable tenant_id lookup byname
+    tenant_id:              # Enter account_id if not looking up byname && find_tenant_id == false
     
     ###
     # Authentication Bearer Tokens 
@@ -66,8 +67,8 @@
 
 
     ###
-    # GRID: Create tenant
-    - name: Create a StorageGRID Tenant Account
+    # GRID: Create / Modify tenant
+    - name: Create or Modify a StorageGRID Tenant Account
       netapp.storagegrid.na_sg_grid_account:
         <<: *grid_auth
 
@@ -83,7 +84,7 @@
         allow_platform_services: "{{ tenant.allow_platform_services | default('false') }}"
         use_own_identity_source: "{{ tenant.use_own_identity_source | default('false') }}"
       register: account
-      # when: state == 'present'
+      when: state == 'present'
 
   ###
   # Lookup Tenant account_id - set find_account_id to `true` 
@@ -116,20 +117,25 @@
       #     - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
       #   when: item.name == tenant.name
 
+    ###
+    # Find account_id for given tenant name
       - name: Set_Fact - tenant_id
         set_fact:
           tenant_id: "{{ item.id }}"
         with_items:
           - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
-        when: item.name == tenant.name
+        when: item.name|lower == tenant.name|lower
 
     ###
     # Debug: Print varible value
-      - name: 'DEBUG: Print Varible: tenant_id'
-        debug:
-          msg: "from set_fact: {{ tenant_id }}"
+      # - name: 'DEBUG: Print Varible: tenant_id'
+      #   debug:
+      #     msg: "from set_fact: {{ tenant_id }}"
 
-      when: find_tenant_id is true 
+      # when: find_tenant_id is true 
+    
+    # End block
+    ###
 
     ###
     # Tenant Authorization Token
@@ -149,19 +155,32 @@
           }
       register: tenant_auth_response
 
-    ###
-    # Debug: Test ORG-AUTH & ORG-INFO is working
-    ###
-    # # ORG-INFO - ALL
-    # - name: Get ORG Info
-    #   netapp.storagegrid.na_sg_org_info:
-    #     gather_subset:
-    #       - all
-    #     <<: *org_auth
-    #   register: grid_info_results
 
-    # # DEBUG: Print ORG-INFO Response
-    # - name: Print GRID Response
-    #   debug:
-    #     var: grid_info_results
+    ###
+    # GRID: Delete tenant
+    # Requirements: All buckets (containers) need to be removed prior to deletion
+    
+    ###
+    # Removes containers 
+    - name: Delete StorageGRID Tenant Containers
+      netapp.storagegrid.na_sg_org_container:
+        <<: *org_auth
 
+        state:            "{{ state }}"
+        name:             "{{ tenant.name }}"
+
+      when: state == 'absent'
+    
+
+    ###
+    # Removes Tenant
+    - name: Delete a StorageGRID Tenant Account
+      netapp.storagegrid.na_sg_grid_account:
+        <<: *grid_auth
+
+        state:            "{{ state }}"
+        name:             "{{ tenant.name }}"
+
+        protocol:         "{{ tenant.protocol | default('s3') }}"
+
+      when: state == 'absent'

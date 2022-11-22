@@ -26,6 +26,13 @@ Creating the resource container that will manage and present the object resource
 * management - Enables/Disables the ability to manage the tenant through the "Tenant Manager". Useful for API only use cases
 * 
 
+This workflow can create, Modify or delete a tenant
+
+Use Cases:
+* Required, there will always be a tenant - A container for all resources presented externally
+* Dedicated Tenant - Application, Deptartment or end-user requiring power-user or more control for access keys, user & group access
+* Shared Tenant - General object services where no user & basic key mgmt is acceptable
+
 ### User Mgmt
 
 User management is a very important part of provisioning as it identifies who can administer the tenant and who can access tenant resources. This can be local accounts in small to medium deployments. However, this will likely be federated accounts & groups in the enterprise where security and centralized authentication is available.

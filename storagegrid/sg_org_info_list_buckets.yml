@@ -1,19 +1,21 @@
 ---
 - hosts: localhost
-  name: "Get Org Info"
+  name: "Get Org Info && List Buckets"
   gather_facts: no
   collections:
   - netapp.storagegrid
   vars_files:
   - vars/vars_sg_exampleLab.yml
   vars:
+    # tenant_mgr:         gridadmin1
+    # tenant_mgr_passwd:  exampleGRID
     tenant:
       name:           AppID01
-      id:             '38493884429242321796'
       admin_username: root
       admin_passwd:   netapp1234
     
-    find_tenant_id:   false  # Set to true to enable tenant.id lookup byname
+    # find_tenant_id:   true  # Set to true to enable tenant_id lookup byname
+    # tenant_id:              # Enter account_id if not looking up byname && find_tenant_id == false
 
     ###
     # Authentication Bearer Tokens 
@@ -47,8 +49,8 @@
         }
     register: auth_response
 
-  ###
-  # Lookup Tenant account_id - set find_account_id to `true` 
+###
+# Lookup Tenant account_id - set find_account_id to `true` 
   - name: Lookup Tenant account_id byname
     block:
 
@@ -82,7 +84,7 @@
   # Find account_id for given tenant name
     - name: Set_Fact - tenant_id
       set_fact:
-        tenant.id: "{{ item.id }}"
+        tenant_id: "{{ item.id }}"
       with_items:
         - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
       when: item.name|lower == tenant.name|lower
@@ -93,7 +95,7 @@
     #   debug:
     #     msg: "from set_fact: {{ tenant_id }}"
 
-    when: find_tenant_id is true 
+    # when: find_tenant_id is true 
   
   # End block
   ###
@@ -108,7 +110,7 @@
       body_format: json
       body:
         {
-          "accountId":  "{{ tenant.id }}",
+          "accountId":  "{{ tenant_id }}",
           "username":   "{{ tenant.admin_username }}",
           "password":   "{{ tenant.admin_passwd }}",
           "cookie": false,
@@ -122,14 +124,11 @@
   #   debug:
   #     msg: "Authorization Bearer Token: {{ tenant_auth_response.json.data }}"
 
-  ###
-  # OGR-INFO Get: ALL
   - name: Get ORG Info
     netapp.storagegrid.na_sg_org_info:
       gather_subset:
-      - all
-      # - org/containers
-      # - org/users/root
+      # - all
+      - org/containers
       <<: *org_auth
     register: grid_info_results
 
@@ -138,4 +137,45 @@
   - name: Print GRID Response
     debug:
       var: grid_info_results
+
+  # - name: Print GRID details
+  #   debug:
+  #     msg:
+  #     - "GRID Name:               {{ grid_info_results.sg_info['grid/health/topology'].data.name }}"
+  #     - "StorageGRID Version:     {{ grid_info_results.sg_info['grid/config/product-version'].data.productVersion }}"
+
+  # - name: Print GRID nodes
+  #   debug:
+  #     msg:
+  #     - "Data Center:        {{ item.0.name }}"
+  #     - "Node Name:          {{ item.1.name }}"
+  #     - "Node Type:          {{ item.1.type }}"
+  #   with_subelements:
+  #   - "{{ grid_info_results.sg_info['grid/health/topology'].data.children }}"
+  #   - children
+  #   loop_control:
+  #     label: "{{ item.0.name }} - {{ item.1.name }}"
+
+  # - name: Print GRID Response
+  #   debug:
+  #     var: grid_info_results
+  #     # msg:
+  #     # - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"
+
+  ###
+  # Debug: Print varible value
+  # - name: Print GRID Response
+  #   debug:
+  #     # var: grid_info_results
+  #     msg:
+  #     - "Bucket:            {{ grid_info_results.sg_info['org/containers'].data }}"
+
+  ###
+  # Debug: Print Containers within Tenant
+  - name: "Print Containers for {{ tenant.name }}"
+    debug:
+      msg:
+        - "Bucket Name: {{ item.name }}"
+    with_items:
+      - "{{ grid_info_results.sg_info['org/containers'].data }}"
 

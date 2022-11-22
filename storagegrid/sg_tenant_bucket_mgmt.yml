@@ -1,0 +1,229 @@
+###
+# StorageGRID: Tenant User Management
+# Description:
+# Creates / Modifies / Deletes both administrative & end-user accounts
+# 
+# Requirements:
+#  - Tenant Administrator - Can't be  done by normal user
+#  - Tenant Account ID
+#  - tenant user name & access_key required for deletion
+#  - 
+#  - 
+#  - 
+###
+---
+- name: "StorageGRID: Tenant User Management"
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.storagegrid
+
+  vars_files:
+    - vars/vars_sg_exampleLab.yml
+    # - vars/vars_sg_tenant_creds.yml
+    # - vars/vars_sg_tenant_users.yml
+    # - vars/vars_sg_tenant_buckets.yml
+    - vars/vars_sg_tenant_appid01.yml
+  vars:
+    state:                  present
+    api_base_url:           https://192.168.7.215 
+
+    tenant:
+      name:           AppID01
+      id:             '46888032350078966590'  # Enter account_id if not looking up byname && find_tenant_id == false
+      admin_username: root
+      admin_passwd:   netapp1234
+    
+    find_tenant_id:   true  # Set to true to enable tenant_id lookup byname
+
+    ###
+    # Authentication Bearer Tokens 
+    # Grid Authorization Bearer Token
+    grid_auth: &grid_auth
+      api_url:        "{{ grid.api_base_url }}"
+      auth_token:     "{{ auth_response.json.data }}"
+      validate_certs: false
+    # Tenant Authorization Bearer Token
+    tenant_auth: &org_auth
+      api_url:        "{{ grid.api_base_url }}"
+      auth_token:     "{{ tenant_auth_response.json.data }}"
+      validate_certs: false
+
+  tasks:
+
+  ###
+  # GRID authorization required for tenant ID lookup 
+  # Note: disable by setting find_tenant_id: false 
+  ###
+
+  ###
+  # Lookup Tenant account_id - set find_account_id to `true` 
+  - name: Lookup Tenant account_id byname
+    block:
+
+    ###
+    # GRID API Authorization Token
+    - name: Get GRID authorization token
+      uri:
+        url: "{{ grid.api_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "username": "{{ grid.admin_username }}",
+            "password": "{{ grid.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: auth_response
+
+    ###
+    # GRID INFO Collection
+    - name: Get Grid INFO
+      netapp.storagegrid.na_sg_grid_info:
+        <<: *grid_auth
+        gather_subset:
+          # - all
+          - grid/accounts
+      register: grid_info_results
+
+    ###
+    # Debug: Print GRID-INFO Response
+    # - name: Print GRID-INFO Response
+    #   debug:
+    #     var: grid_info_results
+
+    ###
+    # Debug: Print Tenant Account ID Byname
+      # - name: "Print Tenant ID for {{ tenant.name }}"
+      #   debug:
+      #     msg:
+      #       - "Tenant Name: {{ item.name }} Tenant ID: {{ item.id }}"
+      #   with_items:
+      #     - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+      #   when: item.name == tenant.name
+
+    ###
+    # Find account_id for given tenant name
+    - name: Set_Fact - tenant_id
+      set_fact:
+        tenant_id: "{{ item.id }}"
+      with_items:
+        - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+      when: item.name|lower == tenant.name|lower
+
+    ###
+    # Debug: Print varible value
+    # - name: 'DEBUG: Print Varible: tenant_id'
+    #   debug:
+    #     msg: "from set_fact: {{ tenant_id }}"
+
+    # when: find_tenant_id is true 
+
+    when: find_tenant_id is true
+    # End block
+    ###
+
+  ###
+  # Tenant Authorization Token
+  ###
+  - name: Get Tenant Administrator user authorization token
+    uri:
+      url: "{{ api_base_url }}/api/v3/authorize"
+      method: POST
+      validate_certs: false
+      body_format: json
+      body:
+        {
+          "accountId":  "{{ tenant.id }}",
+          "username":   "{{ tenant.admin_username }}",
+          "password":   "{{ tenant.admin_passwd }}",
+          "cookie":     false,
+          "csrfToken":  false,
+        }
+    register: tenant_auth_response
+
+  ###
+  # DEBUG: Test ORG-AUTH & ORG-INFO is working
+  ###
+  # # ORG-INFO - ALL
+  # - name: Get ORG Info
+  #   netapp.storagegrid.na_sg_org_info:
+  #     gather_subset:
+  #       - all
+  #     <<: *org_auth
+  #   register: grid_info_results
+
+  # # DEBUG: PPrint ORG-INFO Response
+  # - name: Print GRID Response
+  #   debug:
+  #     var: grid_info_results
+
+
+  ###
+  # Debug: Print varible value
+  # - name: Print AUTH Token Data
+  #   debug:
+  #     msg: "Authorization Bearer Token: {{ tenant_auth_response.json.data }}"
+
+  
+
+  ###
+  # Debug: Test ORG-AUTH & ORG-INFO is working
+  ###
+  # Debug: Print varible value
+  # ORG-INFO - ALL
+  # - name: Get ORG Info
+  #   netapp.storagegrid.na_sg_org_info:
+  #     gather_subset:
+  #       - all
+  #     <<: *org_auth
+  #   register: grid_info_results
+
+  ###
+  # ORG-INFO Get: org/containers
+  - name: Get ORG Info - containers
+    netapp.storagegrid.na_sg_org_info:
+      gather_subset:
+      # - all
+      - org/containers
+      <<: *org_auth
+    register: grid_info_results
+
+  ###
+  # Debug: Print varible value
+  - name: Print GRID Response
+    debug:
+      var: grid_info_results
+
+  ###
+  # DEBUG: Print Containers within Tenant
+  - name: "Print Containers for {{ tenant.name }}"
+    debug:
+      msg:
+        - "Bucket Name: {{ item.name }}"
+    with_items:
+      - "{{ grid_info_results.sg_info['org/containers'].data }}"
+
+
+  ###
+  # Create Containers / Buckets within a Tenant
+  - name: create a s3 bucket
+    netapp.storagegrid.na_sg_org_container:
+      <<: *org_auth
+      state:  "{{ state }}"
+      name:   "{{ item }}"  # name must contain only the following characters: [a-z0-9-.]
+
+      region:                     "{{ tenant.region             | default(omit) }}"
+      bucket_versioning_enabled:  "{{ tenant.bucket_versioning  | default(omit) }}"
+      
+      s3_object_lock_enabled:     "{{ tenant.s3_object_lock     | default(omit) }}"
+      # compliance:           #Cannot be specified along with s3_object_lock_enabled.
+      #   auto_delete:              "{{ tenant.comp_auto_delete   | default(omit) }}"
+      #   legal_hold:               "{{ tenant.comp_legal_hold    | default(omit) }}"
+      #   retention_period_minutes: "{{ tenant.comp_retention     | default(omit) }}"
+      
+    with_items: "{{ tenant.bucket }}"
+
+
