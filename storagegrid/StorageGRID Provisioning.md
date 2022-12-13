@@ -53,3 +53,53 @@ Signed certificates are a critical element of protocol security. Current & verif
 
 Buckets are the unit of storage that is presented to applications and users for use.
 
+## Client Access Example
+
+Using StorageGRID Webscale with AWS S3 CLI
+https://netapp.io/2016/12/13/using-storagegrid-webscale-aws-s3-cli/
+
+Example Commands:
+List buckets from known endpoint & valid tenant creds  
+`aws s3 ls --profile default --endpoint-url https://192.168.7.217:10443/ --no-verify-ssl`
+
+List contents of bucket - using downloaded CA bundle instead of OS  
+`aws s3 ls s3://appid01-01 --profile default --endpoint-url https://192.168.7.217:10443 --ca-bundle appid01-certificate.pem`
+
+
+Upload / Sync contents between locations
+```
+aws s3 sync vars/ s3://appid01-01 --profile default --endpoint-url https://192.168.7.217:10443 --ca-bundle appid01-certificate.pem
+upload: vars/vars_sg_tenant_fabricpool.yml to s3://appid01-01/vars_sg_tenant_fabricpool.yml
+upload: vars/vars_sg_config_exampleLab.yml to s3://appid01-01/vars_sg_config_exampleLab.yml
+upload: vars/vars_sg_tenant_group_appid01.yml to s3://appid01-01/vars_sg_tenant_group_appid01.yml
+upload: vars/vars_sg_tenant_users.yml to s3://appid01-01/vars_sg_tenant_users.yml
+upload: vars/vars_sg_exampleLab.yml to s3://appid01-01/vars_sg_exampleLab.yml
+upload: vars/vars_sg_tenant_buckets.yml to s3://appid01-01/vars_sg_tenant_buckets.yml
+upload: vars/vars_sg_tenant_appid02.yml to s3://appid01-01/vars_sg_tenant_appid02.yml
+upload: vars/vars_sg_tenant_creds.yml to s3://appid01-01/vars_sg_tenant_creds.yml
+upload: vars/vars_sg_tenant_appid01.yml to s3://appid01-01/vars_sg_tenant_appid01.yml
+upload: vars/vars_sg_tenant_users_appid01.yml to s3://appid01-01/vars_sg_tenant_users_appid01.yml
+upload: vars/vars_sg_tenant_appid03.yml to s3://appid01-01/vars_sg_tenant_appid03.yml
+upload: vars/sample_varibles_file.yml to s3://appid01-01/sample_varibles_file.yml
+```
+
+List bucket contents of a bucket
+
+```
+aws s3 ls s3://appid01-01 --profile default --endpoint-url https://192.168.7.217:10443 --ca-bundle appid01-certificate.pem
+2022-12-06 09:29:05       1038 sample_varibles_file.yml
+2022-12-06 09:29:05        476 vars_sg_config_exampleLab.yml
+2022-12-06 09:29:05        210 vars_sg_exampleLab.yml
+2022-12-06 09:29:05       1909 vars_sg_tenant_appid01.yml
+2022-12-06 09:29:05        601 vars_sg_tenant_appid02.yml
+2022-12-06 09:29:05        394 vars_sg_tenant_appid03.yml
+2022-12-06 09:29:05       1187 vars_sg_tenant_buckets.yml
+2022-12-06 09:29:05        844 vars_sg_tenant_creds.yml
+2022-12-06 09:29:05        421 vars_sg_tenant_fabricpool.yml
+2022-12-06 09:29:05       1415 vars_sg_tenant_group_appid01.yml
+2022-12-06 09:29:05        721 vars_sg_tenant_users.yml
+2022-12-06 09:29:05        733 vars_sg_tenant_users_appid01.yml
+```
+
+
+

@@ -20,7 +20,7 @@
     state: present
     api_base_url:           https://192.168.7.215
     tenant_name:            App01
-    tenant_id:              '46888032350078966590'
+    tenant_id:              '38493884429242321796'
     tenant_admin_username:  root
     tenant_admin_passwd:    netapp1234
     tenant_user_name:       service_account
@@ -78,31 +78,36 @@
       register: s3_cred
       when: state == "present"
 
-    - name: Delete a s3 key for our users
-      netapp.storagegrid.na_sg_org_user_s3_key:
-        <<: *org_auth
+    # - name: Delete a s3 key for our users
+    #   netapp.storagegrid.na_sg_org_user_s3_key:
+    #     <<: *org_auth
 
-        state: "{{ state }}"
-        unique_user_name: "user/{{ item }}"
-        access_key: "{{ tenant_user_key }}"
+    #     state: "{{ state }}"
+    #     unique_user_name: "user/{{ item }}"
+    #     access_key: "{{ tenant_user_key }}"
 
-      with_items: "{{ tenant_user_name }}"
-      register: s3_cred
-      when: state == "absent"
+    #   with_items: "{{ tenant_user_name }}"
+    #   register: s3_cred
+    #   when: state == "absent"
 
     - name: Check folder for storing credentials
       stat:
         path: "../files/s3_keys/{{ tenant_name }}"
       register: s3cred_folder
-      when: state is present
+      when: state == "present"
 
     - name: Create directory if it does not exist
       file:
         path: "../files/s3_keys/{{ tenant_name }}"
         state: directory
-        mode: 0644
+        mode: 0755
 
-      when: not s3cred_folder.stat.exists and state is 'present'
+      when: not s3cred_folder.stat.exists and state == "present"
+
+    # DEBUG: Print ORG-INFO Response
+    - name: Print GRID Response
+      debug:
+        var: s3_cred
 
     - set_fact:
         pipe_timestamp: "{{ lookup('pipe', 'date +%Y%m%dT%H%M%S') }}"
@@ -110,7 +115,7 @@
     - name: Write credentials to file
       copy:
         content: "{{ item.resp }}"
-        dest: "../files/s3_keys/{{ tenant.name }}/{{ item.item }}{{ pipe_timestamp }}"
+        dest: "../files/s3_keys/{{ tenant_name }}/{{ item.item }}{{ pipe_timestamp }}"
         # force: false
         mode: 0644
 

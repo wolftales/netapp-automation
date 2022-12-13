@@ -65,7 +65,7 @@
           - "Tenant Name: {{ item.name }} Tenant ID: {{ item.id }}"
       with_items:
         - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
-      when: item.name == tenant.name
+      when: item.name|lower == tenant.name|lower
 
     ###
     # Examples

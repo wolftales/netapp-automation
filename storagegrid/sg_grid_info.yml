@@ -5,7 +5,7 @@
   collections:
     - netapp.storagegrid
   vars_files:
-    - vars_storagegrid_exampleLab.yml
+    - vars/vars_sg_exampleLab.yml
   vars:
     grid_auth: &grid_auth
       api_url: "{{ grid.api_base_url }}"
