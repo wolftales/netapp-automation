@@ -1,0 +1,20 @@
+vservers: # Vservers to create
+  # - { name: nfs_vserver, aggr: aggr1, protocol: nfs }
+  # aggr_list is optional.  If not specified all aggregates will be added to the allowed list.
+  # - { name: nfs_vserver2, aggr: aggr1, protocol: nfs, aggr_list: "aggr1,aggr2" }
+  # with protocol: nfs, the keys nfsv3, nfsv4, nfsv41 are optional, the default values are as shown below.
+  # - { name: nfs_vserver3, aggr: aggr1, protocol: nfs, nfsv3: enabled, nfsv4: disabled, nfsv41: disabled }
+  - { name: ontap-vs01, aggr: sandbox_aggr_01, protocol: 'cifs,nfs',  nfsv3: enabled, nfsv4: enabled, nfsv41: enabled }
+
+# vserver_dns: # DNS at the Vserver level.
+#   - { vserver: ontap-vs01, dns_domains: example.local, dns_nameservers: 192.168.7.3 }
+
+# lifs: # interfaces for the Vservers being created
+#   - { name: nfs_vserver_data_lif, vserver: nfs_vserver, node: cluster-01, port: e0c, protocol: nfs, address: 172.32.0.193, netmask: 255.255.255.0 }
+#   - { name: cifs_vserver_data_lif, vserver: nfs_vserver, node: cluster-01, port: e0c, protocol: nfs, address: 172.32.0.194, netmask: 255.255.255.0 }
+
+# gateway: # To configure the default gateway for the Vserver.
+#   - { vserver: nfs_vserver, destination: 0.0.0.0/0, gateway: 172.32.0.1 }
+
+cifs: # Vservers to join to an AD Domain
+  - { vserver: ontap-vs01, cifs_server_name: ontap-vs01, domain: example.local, force: true }

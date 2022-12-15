@@ -1,0 +1,48 @@
+---
+- hosts:        localhost
+  name:         Basic Connectivity Test
+  gather_facts: false
+  collections:
+    - netapp.ontap
+
+  # Varible precedence: vars < vars_prompts < vaars_files
+  vars:
+    netapp_hostname:  192.168.7.200
+    netapp_username:  admin
+    # netapp_password:  netapp1234
+
+    state:            present
+    
+    cifs_srvr_name:   onatp-vs01
+    svm:              onatp-vs01
+    service_state:    stopped 
+    
+    id_domain:        example.local
+    domain_login:     administrator
+    # domain_pwd:       netapp1234
+    
+    admin_user_name:  Administrator
+    # admin_password:   P@$$w0rd!
+
+
+    login: &login
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https:    true
+      validate_certs: false
+  vars_prompt:
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+    - name:     "admin_password"
+      prompt:   "Enter the Windows Domain Admin Password"
+      private:  yes
+  vars_files:
+    - vars_cifs.yml
+
+  tasks:
+  
+  - name: Include NetApp.ONTAP vserver_create role
+    include_role:
+      name: na_ontap_vserver_create
