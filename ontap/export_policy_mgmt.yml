@@ -1,0 +1,68 @@
+---
+- hosts: localhost
+  gather_facts: false
+  collections:
+    - netapp.ontap
+  vars:
+    netapp_hostname:  192.168.7.200
+    state:            present
+    svm:              ontap-vs01
+    export_policy_name: default
+    rule_index:       1
+    client_match:     0.0.0.0/0
+    ro_rule:          sys
+    rw_rule:          sys
+    super_user:       sys
+    protocol:         nfs
+    anonymous_uid:    65534
+    allow_suid:       true
+    ntfs_unix_security: ignore
+
+  tasks:
+
+  # Manage Export-policies - Create 'data' policy
+  - name: '{{ Create if state == present else Delete }} Data SVM Export-policy'
+    netapp.ontap.na_ontap_export_policy:
+      state: "{{ state }}"
+      name: "{{ export_policy_name }}"
+      vserver: "{{ svm }}"
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+    when: state == 'present'
+
+  # Manage Export-policies - Add rules
+  - name: '{{ Add if state == present else Remove }} Data SVM Export-policy rules'
+    netapp.ontap.na_ontap_export_policy_rule:
+      state: "{{ state }}"
+      policy_name: "{{ export_policy_name }}"
+      vserver: "{{ svm }}"
+      client_match: "{{ client_match }}"
+      rule_index: "{{ rule_index }}"
+      ro_rule: "{{ ro_rule }}"
+      rw_rule: "{{ rw_rule }}"
+      super_user_security: "{{ super_user }}"
+      protocol: "{{ protocol }}"
+      anonymous_user_id: "{{ anonymous_uid }}"
+      allow_suid: "{{ allow_suid }}"
+      ntfs_unix_security: "{{ ntfs_unix_security }}"
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+
+  # Manage Export-policies - Create 'data' policy
+  - name: '{{ Create if state == present else Delete }} Data SVM Export-policy'
+    netapp.ontap.na_ontap_export_policy:
+      state: "{{ state }}"
+      name: "{{ svm_export_policy_name }}"
+      vserver: "{{ svm }}"
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+    when: state == 'absent'
