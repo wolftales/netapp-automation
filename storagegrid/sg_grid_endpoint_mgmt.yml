@@ -1,0 +1,72 @@
+---
+- hosts: localhost
+  name: "GRID Gateway Endpoint Management"
+  gather_facts: no
+  collections:
+    - netapp.storagegrid
+  
+  # vars_files > vars_prompt > vars
+  vars_files:
+    - vars/vars_sg_exampleLab.yml
+  vars:
+    grid_auth: &grid_auth
+      api_url: "{{ grid.api_base_url }}"
+      auth_token: "{{ auth_response.json.data }}"
+      validate_certs: false
+    
+    display_name:         "AppID01"
+    port:                 10443
+    secure:               True
+    enable_ipv4:          True
+    enable_ipv6:          True
+    default_service_type: "s3"
+    binding_mode:         "global"
+
+  tasks:
+    - name: Get GRID authorization token
+      uri:
+        url: "{{ grid.api_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "username": "{{ grid.admin_username }}",
+            "password": "{{ grid.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: auth_response
+
+  - name: Create and Upload Certificate to a Gateway Endpoint with global binding
+    netapp.storagegrid.na_sg_grid_gateway:
+      <<: *grid_auth
+
+      displayName:          "{{ display_name }}"
+      port:                 "{{ port }}"
+      secure:               "{{ secure }}"
+      enable_ipv4:          "{{ enable_ipv4 }}"
+      enable_ipv6:          "{{ enable_ipv6 }}"
+      default_service_type: "{{ port }}"
+      binding_mode:         "{{ binding_mode }}"
+      # ha_groups: site1_ha_group
+      # server_certificate: |
+      #   -----BEGIN CERTIFICATE-----
+      #   MIIC6DCCAdACCQC7l4WukhKD0zANBgkqhkiG9w0BAQsFADA2..swCQYDVQQGEwJB
+      #   BAMMHnNnYW4wMS5kZXYubWljcm9icmV3Lm5ldGFwcC5hdTCC..IwDQYJKoZIhvcN
+      #   AQEBBQADggEPADCCAQoCggEBAMvjm9I35lmKcC7ITVL8+QiZ..lvdkbfZCUQrfdy
+      #   71inP+XmPjs0rnkhICA9ItODteRcVlO+t7nDTfm7HgG0mJFk..m0ffyEYrcx24qu
+      #   S7gXYQjRsJmrep1awoaCa20BMGuqK2WKI3IvZ7YiT22qkBqK..+hIFffX6u3Jy+B
+      #   77pR6YcATtpMHW/AaOx+OX9l80dIRsRZKMDxYQ==
+      #   -----END CERTIFICATE-----
+      # private_key: |
+      #   -----BEGIN PRIVATE KEY-----
+      #   MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIB..DL45vSN+ZZinAu
+      #   L25W0+cz1Oi69AKkI7d9nbFics2ay5+7o+4rKqf3en2R4MSx..vy+iDlOmATib5O
+      #   x8TN5pJ9AgMBAAECggEADDLM8tHXXUoUFihzv+BUwff8p8Yc..cXFcSes+xTd5li
+      #   po8lNsx/v2pQx4ByBkuaYLZGIEXOWS6gkp44xhIXgQKBgQD4..7862u5HLbmhrV3
+      #   vs8nC69b3QKBgQDacCD8d8JpwPbg8t2VjXM3UvdmgAaLUfU7..DWV+W3jqzmDOoN
+      #   zWVgPbPNj0UmzvLDbgxLoxe77wjn2BHsAJVAfJ9VeQKBgGqF..gYO+wHR8lJUoa5
+      #   ZEe8Upy2oBtvND/0dnwO2ym2FGsBJN0Gr4NKdG5vkzLsthKk..Rm0ikwEUOUZQKE
+      #   K8J5yEVeo9K2v3wggtq8fYn6
+      #   -----END PRIVATE KEY-----
