@@ -1,16 +1,16 @@
 ################################################################################
 #
 #   Author      :   Ken Hillier
-#   Date        :   21 June 2021
+#   Date        :   25 January 2023
 #
-#   Description :   Workflow to create various policy to support volume creation
+#   Description :   Workflow to illustrate get CERT by name
 #
 #   Dependencies: netapp.ontap collection
 #
 ################################################################################
 ---
 - hosts:                localhost
-  name:                 Various Policy Creation Workflow
+  name:                 Get Cert by name
   gather_facts:         false
   collections:
     -                   ansible.builtin
@@ -26,7 +26,7 @@
 
   vars_files:
     - vars/vars_ontap_sandbox.yml
-    - vars_policy_create.yml
+    - 
 
   pre_tasks:
     #---------------------------------------------------------------------------
@@ -45,51 +45,75 @@
         -                       vserver is defined
       fail_msg:                 "One or more variables are missing from submission"
 
-
   tasks:
 
-  # Creating policy dependancies for the volume creation process
-  - name: create qos policy group
-    na_ontap_qos_policy_group:
-      <<: *login
-      state: "{{ state }}"
+  # 
 
-      name: "{{ item.name }}"
-      vserver: "{{ item.vserver }}"
-      max_throughput: "{{ item.max | default(omit) }}"
-      min_throughput: "{{ item.min | default(omit) }}"
+  ###
+  # Lookup Tenant account_id - set find_account_id to `true` 
+    - name: Lookup Tenant account_id byname
+      block:
 
-    loop: "{{ qos_policies }}"
+    ###
+    # GRID INFO Collection
+      - name: Get Grid INFO
+        netapp.storagegrid.na_sg_grid_info:
+          <<: *grid_auth
+          gather_subset:
+            # - all
+            - grid/accounts
+        register: grid_info_results
 
-  - name: Create Export Policy
-    na_ontap_export_policy:
-      <<: *login
-      state: "{{ state }}"
+    ###
+    # Debug: Print GRID-INFO Response
+      # - name: Print GRID-INFO Response
+      #   debug:
+      #     var: grid_info_results
 
-      name: "{{ item.name }}"
-      vserver: "{{ item.vserver }}"
+    ###
+    # Debug: Print Tenant Account ID Byname
+      # - name: "Print Tenant ID for {{ tenant.name }}"
+      #   debug:
+      #     msg:
+      #       - "Tenant Name: {{ item.name }} Tenant ID: {{ item.id }}"
+      #   with_items:
+      #     - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+      #   when: item.name == tenant.name
 
-    loop: "{{ export_policies }}"
+    ###
+    # Find account_id for given tenant name
+      - name: Set_Fact - tenant_id
+        set_fact:
+          tenant_id: "{{ item.id }}"
+        with_items:
+          - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+        when: item.name|lower == tenant.name|lower
 
-  - name: Create Snapshot policy
-    na_ontap_snapshot_policy:
-      <<: *login
-      state: "{{ state }}"
+    ###
+    # Debug: Print varible value
+      # - name: 'DEBUG: Print Varible: tenant_id'
+      #   debug:
+      #     msg: "from set_fact: {{ tenant_id }}"
 
-      name: "{{ item.name }}"
-      schedule: "{{ item.sched }}"
-      prefix: "{{ item.prefix | default(omit) }}"
-      count: "{{ item.count }}"
-      enabled: "{{ item.enabled }}"
+      # when: find_tenant_id is true 
+    
+    # End block
+    ###
 
-    loop: "{{ snap_policies }}"
-
-  # Quota Policy create - This should be part of a standard policy configuration in the future
-  - name: 'Create "Default" quota policy for new volumes based on the  {{ type }} template'
-    na_ontap_quota_policy:
-      <<: *login
-
-      state:      "{{ state }}"
-
-      vserver:    "{{ vserver }}"
-      name:       "default"
+    ###
+    # Tenant Authorization Token
+    - name: Get Tenant Administrator user authorization token
+      uri:
+        url: "{{ grid.api_base_url }}/api/v3/authorize"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          {
+            "accountId":  "{{ tenant.id }}",
+            "username":   "{{ tenant.admin_username }}",
+            "password":   "{{ tenant.admin_passwd }}",
+            "cookie": false,
+            "csrfToken": false,
+          }
+      register: tenant_auth_response
