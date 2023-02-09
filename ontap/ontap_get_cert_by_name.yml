@@ -20,100 +20,54 @@
       hostname:         "{{ netapp_hostname }}"
       username:         "{{ netapp_username }}"
       password:         "{{ netapp_password }}"
-      https:            "{{ netapp_https }}"
-      validate_certs:   "{{ netapp_validate_certs }}"
+      https:            "{{ https }}"
+      validate_certs:   "{{ validate_certs }}"
     state:              present
 
   vars_files:
-    - vars/vars_ontap_sandbox.yml
-    - 
+    - vars/vars_ontap_ontap-cl01.yml
 
-  pre_tasks:
-    #---------------------------------------------------------------------------
-    # PRE VALIDATION STEPS:
-    #  - Attempting to mimic as much of WFA controls as possible
-    #  - This performs the minimum possible validation against inputs
-    #---------------------------------------------------------------------------
-  - name:                       "Asserting mandatory storage details are defined properly"
-    assert:
-      that:
-        -                       netapp_hostname is defined
-        -                       netapp_username is defined
-        -                       netapp_password is defined
-        -                       netapp_https is defined
-        -                       netapp_validate_certs is defined
-        -                       vserver is defined
-      fail_msg:                 "One or more variables are missing from submission"
 
   tasks:
 
-  # 
+  
+  - name: run ONTAP gather facts for aggregate info and volume info with fields section
+    netapp.ontap.na_ontap_rest_info:
+      <<: *login
+
+      use_rest: Always
+
+      fields:
+        - '*'
+      gather_subset:
+        # - storage/aggregates
+        # - storage/volumes
+        - security/certificates
+        # - security/key-managers
+    register: rest_info_results
 
   ###
-  # Lookup Tenant account_id - set find_account_id to `true` 
-    - name: Lookup Tenant account_id byname
-      block:
+  # Debug: Print GRID-INFO Response
+  - name: Print GRID-INFO Response
+    debug:
+      var: rest_info_results
+  
+  ###
+  # Debug: Print Cert UUID Byname
+  # - name: "Print Tenant ID for {{ cert.name }}"
+  - name: "Print Certificate Names"
+    debug:
+      msg:
+        - "Certificate Name: {{ item.name }} ID: {{ item.id }}"
+    with_items:
+      - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
+    # when: item.name == cert.name
 
-    ###
-    # GRID INFO Collection
-      - name: Get Grid INFO
-        netapp.storagegrid.na_sg_grid_info:
-          <<: *grid_auth
-          gather_subset:
-            # - all
-            - grid/accounts
-        register: grid_info_results
-
-    ###
-    # Debug: Print GRID-INFO Response
-      # - name: Print GRID-INFO Response
-      #   debug:
-      #     var: grid_info_results
-
-    ###
-    # Debug: Print Tenant Account ID Byname
-      # - name: "Print Tenant ID for {{ tenant.name }}"
-      #   debug:
-      #     msg:
-      #       - "Tenant Name: {{ item.name }} Tenant ID: {{ item.id }}"
-      #   with_items:
-      #     - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
-      #   when: item.name == tenant.name
-
-    ###
-    # Find account_id for given tenant name
-      - name: Set_Fact - tenant_id
-        set_fact:
-          tenant_id: "{{ item.id }}"
-        with_items:
-          - "{{ grid_info_results.sg_info['grid/accounts'].data }}"
-        when: item.name|lower == tenant.name|lower
-
-    ###
-    # Debug: Print varible value
-      # - name: 'DEBUG: Print Varible: tenant_id'
-      #   debug:
-      #     msg: "from set_fact: {{ tenant_id }}"
-
-      # when: find_tenant_id is true 
-    
-    # End block
-    ###
-
-    ###
-    # Tenant Authorization Token
-    - name: Get Tenant Administrator user authorization token
-      uri:
-        url: "{{ grid.api_base_url }}/api/v3/authorize"
-        method: POST
-        validate_certs: false
-        body_format: json
-        body:
-          {
-            "accountId":  "{{ tenant.id }}",
-            "username":   "{{ tenant.admin_username }}",
-            "password":   "{{ tenant.admin_passwd }}",
-            "cookie": false,
-            "csrfToken": false,
-          }
-      register: tenant_auth_response
+  ###
+  # Find account_id for given tenant name
+    # - name: Set_Fact - tenant_id
+    #   set_fact:
+    #     cert_uuid: "{{ item.id }}"
+    #   with_items:
+    #     - "{{ rest_info_results.sg_info['grid/accounts'].data }}"
+    #   when: item.name|lower == tenant.name|lower
