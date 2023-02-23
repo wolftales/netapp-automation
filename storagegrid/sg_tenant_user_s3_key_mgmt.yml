@@ -18,16 +18,16 @@
     # - vars/sample_varibles_file.yml
   vars:
     state: present
-    api_base_url:           https://192.168.7.215
+    api_url:           https://192.168.7.215
     tenant_name:            App01
-    tenant_id:              '38493884429242321796'
+    tenant_id:              '27370536033373718633'
     tenant_admin_username:  root
     tenant_admin_passwd:    netapp1234
     tenant_user_name:       service_account
     tenant_user_key:        W1LGN9D0CEEHQDSIUT9L
     # tenant_user_passwd: ChangeMe1!
     tenant_auth: &org_auth
-      api_url: "{{ api_base_url }}"
+      api_url: "{{ api_url }}"
       auth_token: "{{ tenant_auth_response.json.data }}"
       validate_certs: false
 
@@ -37,7 +37,7 @@
     # Tenant Authorization Token
     - name: Get Tenant Administrator user authorization token
       uri:
-        url: "{{ api_base_url }}/api/v3/authorize"
+        url: "{{ api_url }}/api/v3/authorize"
         method: POST
         validate_certs: false
         body_format: json

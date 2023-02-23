@@ -1,35 +1,36 @@
 ---
 - hosts: localhost
   name: "Get GRID Info"
-  gather_facts: no
+  gather_facts: false
   collections:
+    - ansible.builtin
     - netapp.storagegrid
   vars_files:
-    - vars/vars_sg_exampleLab.yml
+    - vars/creds_sg_exampleLab.yml
   vars:
     grid_auth: &grid_auth
-      api_url: "{{ grid.api_base_url }}"
+      api_url: "{{ cred.api_base_url }}"
       auth_token: "{{ auth_response.json.data }}"
       validate_certs: false
 
   tasks:
     - name: Get GRID authorization token
-      uri:
-        url: "{{ grid.api_base_url }}/api/v3/authorize"
+      ansible.builtin.uri:
+        url: "{{ cred.api_base_url }}/api/v3/authorize"
         method: POST
         validate_certs: false
         body_format: json
         body:
           {
-            "username": "{{ grid.admin_username }}",
-            "password": "{{ grid.admin_passwd }}",
+            "username": "{{ cred.admin_username }}",
+            "password": "{{ cred.admin_passwd }}",
             "cookie": false,
             "csrfToken": false,
           }
       register: auth_response
 
     # - name: Get GRID authorization token
-    #   uri:
+    #   ansible.builtin.uri:
     #     url: "{{ grid.api_base_url }}/api/v3/authorize"
     #     method: POST
     #     validate_certs: false
@@ -48,22 +49,23 @@
         gather_subset:
           # - all
           # - versions
-          - grid/accounts
           # - grid/health/topology
           # - grid/config/product-version
+          # - grid/accounts
+          - grid/groups
           # - grid/users/root
           # - grid/users
         <<: *grid_auth
       register: grid_info_results
 
     - name: Print GRID Response
-      debug:
+      ansible.builtin.debug:
         var: grid_info_results
         # msg:
         # - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"
 
     # - name: Print GRID Accounts Response
-    #   debug:
+    #   ansible.builtin.debug:
     #     msg:
     #       # - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"
     #       - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name | from_json }}"
@@ -72,18 +74,18 @@
     # Examples
 
     # - name: Print GRID User accountid
-    #   debug:
+    #   ansible.builtin.debug:
     #     msg:
     #     - "Tenant GRID Admin:            {{ grid_info_results }}"
 
     # - name: Print GRID details
-    #   debug:
+    #   ansible.builtin.debug:
     #     msg:
     #     - "GRID Name:               {{ grid_info_results.sg_info['grid/health/topology'].data.name }}"
     #     - "StorageGRID Version:     {{ grid_info_results.sg_info['grid/config/product-version'].data.productVersion }}"
 
     # - name: Print GRID nodes
-    #   debug:
+    #   ansible.builtin.debug:
     #     msg:
     #     - "Data Center:        {{ item.0.name }}"
     #     - "Node Name:          {{ item.1.name }}"
@@ -95,7 +97,7 @@
     #     label: "{{ item.0.name }} - {{ item.1.name }}"
 
     # - name: Print GRID details
-    #   debug:
+    #   ansible.builtin.debug:
     #     var: grid_info_results
     #     msg:
     #     - "Tenant:            {{ grid_info_results.sg_info['grid/accounts'].data.name }}"

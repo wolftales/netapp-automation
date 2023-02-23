@@ -1,0 +1,89 @@
+---
+# NAME: StorageGRID Basic Configuration
+# DESCRIPTION: This configured DNS, NTP and adds alternate GRID admins
+
+- name: "StorageGRID: Basic Configuration"
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - ansible.builtin
+    - netapp.storagegrid
+  vars_files:
+    - vars/creds_sg_exampleLab.yml
+    - vars/vars_sg_exampleLab.yml
+  vars:
+    grid_auth: &grid_auth
+      api_url:                 "{{ cred.api_base_url }}"
+      auth_token:              "{{ auth_response.json.data }}"
+      validate_certs:          false
+
+  tasks:
+
+    - name: Get GRID authorization token
+      ansible.builtin.uri:
+        url:                     "{{ cred.api_base_url }}/api/v3/authorize"
+        method:                  POST
+        validate_certs:          false
+        body_format:             json
+        body: {
+          "username":            "{{ cred.admin_username }}",
+          "password":            "{{ cred.admin_passwd }}",
+          "cookie":              false,
+          "csrfToken":           false
+        }
+      register: auth_response
+
+    - name: Update DNS servers on StorageGRID
+      netapp.storagegrid.na_sg_grid_dns:
+        <<: *grid_auth
+
+        state:          present
+        dns_servers:    "{{ grid.dns_srvs }}"
+
+      register: grid_dns_results
+
+    - name: Update NTP servers on StorageGRID
+      netapp.storagegrid.na_sg_grid_ntp:
+        <<: *grid_auth
+
+        state:          present
+        passphrase:     "{{ cred.passphrase }}"
+        ntp_servers:    "{{ grid.ntp_srvs }}"
+
+      register: grid_ntp_results
+
+    - name: Create a StorageGRID admin group
+      netapp.storagegrid.na_sg_grid_group:
+        <<: *grid_auth
+
+        state:          present
+        display_name:   "{{ grid.admin_group }}"
+        unique_name:    "group/{{ grid.admin_group }}"
+        management_policy:
+          # tenant_accounts: true
+          # maintenance: true
+          root_access: true
+
+      register:       grid_group_results
+
+    - name: Create non-root admin account on StorageGRID
+      netapp.storagegrid.na_sg_grid_user:
+        <<: *grid_auth
+
+        state:        present
+        full_name:    "{{ item }}"
+        unique_name:  "user/{{ item }}"
+        member_of:    "group/{{ grid.admin_group }}"
+        password:     "{{ grid.admin_non_root_passwd }}"
+        disable:      false
+
+      register: grid_admin_results
+      loop: "{{ grid.admin_non_root }}"
+
+    - name: Print GRID Configuration Operation responses
+      ansible.builtin.debug:
+        msg:
+          - "{{ grid_dns_results }}"
+          - "{{ grid_ntp_results }}"
+          - "{{ grid_group_results }}"
+          - "{{ grid_admin_results }}"

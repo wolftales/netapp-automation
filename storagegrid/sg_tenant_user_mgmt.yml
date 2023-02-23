@@ -16,6 +16,7 @@
   hosts: localhost
   gather_facts: false
   collections:
+    - ansible.builtin
     - netapp.storagegrid
 
   vars_files:
@@ -23,7 +24,7 @@
     # - vars/vars_sg_tenant_creds.yml
     # - vars/vars_sg_tenant_users.yml
     # - vars/vars_sg_tenant_appid01.yml
-    - vars/vars_sg_tenant_users_appid01.yml
+    # - vars/vars_sg_tenant_users_appid01.yml
 
   vars:
     state:            present
@@ -34,9 +35,16 @@
     tenant:
       api_url:        https://192.168.7.215
       name:           AppID01
-      id:             '38493884429242321796'  # Enter account_id if not looking up byname && find_tenant_id == false
+      id:             '27370536033373718633'  # Enter account_id if not looking up byname && find_tenant_id == false
       admin_username: root
       admin_passwd:   netapp1234
+    user:
+      name:           testuser01
+      full_name:     "Mr. Test User"
+      passwd:         Ch@ng3Me1!
+      group:          "group/{{ tenant.name }}"
+      disable:        false
+      update_passwd:  on_create
 
     ###
     # Authentication Bearer Tokens 
@@ -51,7 +59,7 @@
     ###
     # Tenant Authorization Token
     - name: Get Tenant Administrator user authorization token
-      uri:
+      ansible.builtin.uri:
         url: "{{ tenant.api_url }}/api/v3/authorize"
         method: POST
         validate_certs: false
@@ -79,55 +87,55 @@
 
     # # DEBUG: PPrint ORG-INFO Response
     # - name: Print GRID Response
-    #   debug:
+    #   ansible.builtin.debug:
     #     var: grid_info_results
 
     ###
     # Create Tenant Users
-    - name: Create Multiple Tenant users with independant settings
-      netapp.storagegrid.na_sg_org_user:
-        <<: *org_auth
+    # - name: Create Multiple Tenant users with independant settings
+    #   netapp.storagegrid.na_sg_org_user:
+    #     <<: *org_auth
 
-        state:            "{{ state }}"
-        full_name:        "{{ item.name }}"
-        unique_name:      "user/{{ item.name }}"
-        password:         "{{ item.passwd }}"
-        update_password:  "{{ item.update_password }}" # Default: on_create
-        disable:          "{{ item.disable }}"
-        member_of:        "group/{{ tenant.name }}"
+    #     state:            "{{ state }}"
+    #     full_name:        "{{ item.name }}"
+    #     unique_name:      "user/{{ item.name }}"
+    #     password:         "{{ item.passwd }}"
+    #     update_password:  "{{ item.update_password }}" # Default: on_create
+    #     disable:          "{{ item.disable }}"
+    #     member_of:        "group/{{ tenant.name }}"
 
-      with_items:         "{{ users.user_list }}"
-      no_log: false
-      when: users.user_list and users.user_list != None
+    #   with_items:         "{{ users.user_list }}"
+    #   no_log: false
+    #   when: users.user_list != None
 
-    - name: Create Multiple Tenant users with common settings
-      netapp.storagegrid.na_sg_org_user:
-        <<: *org_auth
+    # - name: Create Multiple Tenant users with common settings
+    #   netapp.storagegrid.na_sg_org_user:
+    #     <<: *org_auth
 
-        state:            "{{ state }}"
-        full_name:        "{{ item }}"
-        unique_name:      "user/{{ item }}"
-        password:         "{{ users.passwd }}"
-        update_password:  "{{ users.update_passwd }}" # Default: on_create
-        disable:          "{{ users.disable }}"
-        member_of:        "group/{{ tenant.name }}"
+    #     state:            "{{ state }}"
+    #     full_name:        "{{ item }}"
+    #     unique_name:      "user/{{ item }}"
+    #     password:         "{{ users.passwd }}"
+    #     update_password:  "{{ users.update_passwd }}" # Default: on_create
+    #     disable:          "{{ users.disable }}"
+    #     member_of:        "group/{{ tenant.name }}"
 
-      with_items:         "{{ users.users }}"
-      no_log: false
-      when: users.users and users.users != None
+    #   with_items:         "{{ users.users }}"
+    #   no_log: false
+    #   when: users.users != None
 
     - name: Create a Single Tenant user
       netapp.storagegrid.na_sg_org_user:
         <<: *org_auth
 
         state:            "{{ state }}"
-        full_name:        "{{ users.user }}"
-        unique_name:      "user/{{ users.user }}"
-        password:         "{{ users.passwd }}"
-        update_password:  "{{ users.update_passwd }}" # Default: on_create
-        disable:          "{{ users.disable }}"
+        full_name:        "{{ user.full_name }}"
+        unique_name:      "user/{{ user.name }}"
+        password:         "{{ user.passwd }}"
+        update_password:  "{{ user.update_passwd }}" # Default: on_create
+        disable:          "{{ user.disable }}"
         member_of:        "group/{{ tenant.name }}"
 
       # with_items:         "{{ users.user }}"
       no_log: false
-      when: users.user and users.user != None
+      # when: user.name

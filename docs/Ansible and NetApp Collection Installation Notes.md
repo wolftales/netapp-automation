@@ -1,3 +1,17 @@
+## Installing / Updating python3
+
+`sudo apt install python3`
+
+`python3 --version`
+
+## Installing / Updating pip
+
+`sudo apt install python3-pip`
+or
+`sudo python -m pip install --upgrade pip`
+
+`pip3 --version`
+
 ## Installing Ansible:
 
 Installing Ansible from Pypi - Recommended latest source
@@ -18,7 +32,7 @@ Installing NetApp Library
 
 ### Installing latest collection version:
 
-`sudo ansible-galaxy collection install netapp.ontap -f -p /usr/share/ansible/collections/`
+`sudo ansible-galaxy collection install netapp.ontap -f -p /usr/local/share/ansible/collections/`
 
 Process install dependency map
 Starting collection install process
