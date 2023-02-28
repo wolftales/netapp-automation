@@ -5,6 +5,7 @@
   collections:
   - netapp.storagegrid
   vars_files:
+  - vars/creds_sg_exampleLab.yml
   - vars/vars_sg_exampleLab.yml
   vars:
     # tenant_mgr:         gridadmin1
@@ -21,12 +22,12 @@
     # Authentication Bearer Tokens 
     # Grid Authorization Token
     grid_auth: &grid_auth
-      api_url:        "{{ grid.api_base_url }}"
+      api_url:        "{{ cred.api_url }}"
       auth_token:     "{{ auth_response.json.data }}"
       validate_certs: false
     # Tenant Authorization Token
     tenant_auth: &org_auth
-      api_url:        "{{ grid.api_base_url }}"
+      api_url:        "{{ cred.api_url }}"
       auth_token:     "{{ tenant_auth_response.json.data }}"
       validate_certs: false
 
@@ -36,14 +37,14 @@
   # GRID API Authorization Token
   - name: Get GRID authorization token
     uri:
-      url: "{{ grid.api_base_url }}/api/v3/authorize"
+      url: "{{ cred.api_url }}/api/v3/authorize"
       method: POST
       validate_certs: false
       body_format: json
       body:
         {
-          "username": "{{ grid.admin_username }}",
-          "password": "{{ grid.admin_passwd }}",
+          "username": "{{ cred.admin_username }}",
+          "password": "{{ cred.admin_passwd }}",
           "cookie": false,
           "csrfToken": false,
         }
@@ -104,7 +105,7 @@
   # Tenant Authorization Token
   - name: Get Tenant Administrator user authorization token
     uri:
-      url: "{{ grid.api_base_url }}/api/v3/authorize"
+      url: "{{ cred.api_url }}/api/v3/authorize"
       method: POST
       validate_certs: false
       body_format: json

@@ -9,14 +9,14 @@
     - vars/creds_sg_exampleLab.yml
   vars:
     grid_auth: &grid_auth
-      api_url: "{{ cred.api_base_url }}"
+      api_url: "{{ cred.api_url }}"
       auth_token: "{{ auth_response.json.data }}"
       validate_certs: false
 
   tasks:
     - name: Get GRID authorization token
       ansible.builtin.uri:
-        url: "{{ cred.api_base_url }}/api/v3/authorize"
+        url: "{{ cred.api_url }}/api/v3/authorize"
         method: POST
         validate_certs: false
         body_format: json
@@ -47,12 +47,12 @@
     - name: Get Grid INFO
       netapp.storagegrid.na_sg_grid_info:
         gather_subset:
-          # - all
+          - all
           # - versions
           # - grid/health/topology
           # - grid/config/product-version
           # - grid/accounts
-          - grid/groups
+          # - grid/groups
           # - grid/users/root
           # - grid/users
         <<: *grid_auth

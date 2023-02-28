@@ -130,9 +130,9 @@
           # - all
           # - org/containers
           # - org/usage
-          # - org/groups
-          - org/users
-          - org/users/current-user/s3-access-keys
+          - org/groups
+          # - org/users
+          # - org/users/current-user/s3-access-keys
           # - org/users/root
         <<: *org_auth
       register: grid_info_results

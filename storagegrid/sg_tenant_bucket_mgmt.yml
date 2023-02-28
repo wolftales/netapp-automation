@@ -19,18 +19,17 @@
     - netapp.storagegrid
 
   vars_files:
+    - vars/creds_sg_exampleLab.yml
     - vars/vars_sg_exampleLab.yml
-    # - vars/vars_sg_tenant_creds.yml
-    # - vars/vars_sg_tenant_users.yml
-    # - vars/vars_sg_tenant_buckets.yml
-    - vars/vars_sg_tenant_appid01.yml
+    - vars/vars_sg_tenant_buckets.yml
+    # - vars/vars_sg_tenant_appid01.yml
   vars:
-    state:                  present
-    api_base_url:           https://192.168.7.215 
+    state:            present
+    api_url:          https://192.168.7.215 
 
     tenant:
       name:           AppID01
-      id:             '46888032350078966590'  # Enter account_id if not looking up byname && find_tenant_id == false
+      id:             '27370536033373718633'  # Enter account_id if not looking up byname && find_tenant_id == false
       admin_username: root
       admin_passwd:   netapp1234
     
@@ -40,12 +39,12 @@
     # Authentication Bearer Tokens 
     # Grid Authorization Bearer Token
     grid_auth: &grid_auth
-      api_url:        "{{ grid.api_base_url }}"
+      api_url:        "{{ cred.api_url }}"
       auth_token:     "{{ auth_response.json.data }}"
       validate_certs: false
     # Tenant Authorization Bearer Token
     tenant_auth: &org_auth
-      api_url:        "{{ grid.api_base_url }}"
+      api_url:        "{{ cred.api_url }}"
       auth_token:     "{{ tenant_auth_response.json.data }}"
       validate_certs: false
 
@@ -65,14 +64,14 @@
     # GRID API Authorization Token
     - name: Get GRID authorization token
       uri:
-        url: "{{ grid.api_base_url }}/api/v3/authorize"
+        url: "{{ cred.api_url }}/api/v3/authorize"
         method: POST
         validate_certs: false
         body_format: json
         body:
           {
-            "username": "{{ grid.admin_username }}",
-            "password": "{{ grid.admin_passwd }}",
+            "username": "{{ cred.admin_username }}",
+            "password": "{{ cred.admin_passwd }}",
             "cookie": false,
             "csrfToken": false,
           }
@@ -130,7 +129,7 @@
   ###
   - name: Get Tenant Administrator user authorization token
     uri:
-      url: "{{ api_base_url }}/api/v3/authorize"
+      url: "{{ api_url }}/api/v3/authorize"
       method: POST
       validate_certs: false
       body_format: json

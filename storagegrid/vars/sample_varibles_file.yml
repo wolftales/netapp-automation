@@ -5,10 +5,10 @@
 ###
 # GRID Admin Credentials
 grid:
-  admin_base_url:        https://192.168.0.115
-  admin_username:        root
-  admin_password:        exampleGRID
-  passphrase:            exampleLab
+  api_url:          https://192.168.0.115
+  admin_username:   root
+  admin_password:   exampleGRID
+  passphrase:       exampleLab
 ###
 # StorageGRID Configuration Varible Information
 ###
