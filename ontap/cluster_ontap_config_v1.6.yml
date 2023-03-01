@@ -23,6 +23,7 @@
 #   - Users & Role config needs to be confirmed or adapted
 #   - Sensative credentials should leverage var_prompt, uncomment those lines in the playbook
 #   - LS Mirror role can only be run once - It isn't idempotent
+#   - Disabled LS Mirror - recent updates, either ONTAP, modules, or ansible, change output
 # 
 ####
 
