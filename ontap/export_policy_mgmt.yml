@@ -4,7 +4,9 @@
   collections:
     - netapp.ontap
   vars:
-    netapp_hostname:  192.168.7.200
+    netapp_hostname:  192.168.7.180
+    netapp_username:  admin
+    # netapp_password:         # Disabled - Use var_prompt
     state:            present
     svm:              ontap-vs01
     export_policy_name: default
@@ -17,6 +19,11 @@
     anonymous_uid:    65534
     allow_suid:       true
     ntfs_unix_security: ignore
+
+  vars_prompt:
+    - name:   "netapp_password"
+      prompt: "Enter the NetApp Admin Password"
+      private: yes
 
   tasks:
 

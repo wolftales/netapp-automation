@@ -1,0 +1,124 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: Quota Policy Mgmt REST
+  collections:
+    - netapp.ontap
+  vars:
+    netapp_hostname:  192.168.7.180
+    netapp_username:  admin 
+    # netapp_password:    # Disabled - Use var_prompt
+    state:              present
+    vserver:            ontap-vs01
+    quota_policy_name:  default  # Target for ZAPI, REST operates on active policy
+    volume_target:      quota_vol  # Required 
+    set_quota_status:   true      # false, true - on or off
+    quota_target:       "user1,user2"  # for default user & group quota rules use ""
+    quota_type:         user      # user, group, tree
+    qtree_target:       ""        # for tree type quota this field is ""
+    activate_quota_on_change: resize  # resize,reinitialize,none
+    perform_user_mapping: true        # false, true
+    threshold:          ""        # Only available in ZAPI
+    soft_disk_limit:    '-'
+    soft_file_limit:    '-'
+    file_limit:         '-'
+    disk_limit:         '-'
+
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+  vars_prompt:
+    - name:   "netapp_password"
+      prompt: "Enter the NetApp Admin Password"
+      private: yes
+
+
+  tasks:
+
+  # Manage Export-policies - Create 'data' policy
+  - name: '{{ Create if state == present else Delete }} volume quota-policy'
+    netapp.ontap.na_ontap_quota_policy:
+      state: "{{ state }}"
+      name: "{{ quota_policy_name }}"
+      vserver: "{{ vserver }}"
+
+      <<: *login
+    when: state == 'present'
+
+  # Manage Export-policies - Add rules
+  - name: Add/Set quota rule for type user in REST.
+    netapp.ontap.na_ontap_quotas:
+      state:                "{{ state }}"
+      vserver:              "{{ vserver }}"
+      volume:               "{{ volume_target }}"
+      quota_target:         "{{ quota_target }}"  # Only used for ZAPI, REST uses active policy on target
+      qtree:                "{{ qtree_target | default(omit) }}"
+      type:                 "{{ quota_type }}"
+      activate_quota_on_change: "{{ activate_quota_on_change }}"
+      perform_user_mapping:     "{{ perform_user_mapping }}"
+      threshold:            "{{ threshold }}"
+      soft_disk_limit:      "{{ soft_disk_limit }}"
+      soft_file_limit:      "{{ soft_file_limit }}"
+      file_limit:           "{{ file_limit }}"
+      disk_limit:           "{{ disk_limit }}"
+      set_quota_status:     "{{ set_quota_status }}"
+      
+      <<: *login
+    
+    when: state == 'present'
+
+  # - name: Modify quota reset file limit and modify disk limit.
+  #   netapp.ontap.na_ontap_quotas:
+  #     state:        "{{ state }}"
+  #     vserver:      "{{ vserver }}"
+  #     volume:       "{{ volume_target }}"
+  #     quota_target: "user1,user2"
+  #     qtree: qtree
+  #     type: user
+  #     file_limit: "-"
+  #     disk_limit: 100
+  #     set_quota_status: True
+
+  #     <<: *login
+
+  # - name: Add/Set quota rule for type group in REST.
+  #   netapp.ontap.na_ontap_quotas:
+  #     state:        "{{ state }}"
+  #     vserver:      "{{ vserver }}"
+  #     volume:       "{{ volume_target }}"
+  #     quota_target: group1
+  #     qtree:        qtree
+  #     type:         group
+  #     file_limit:   2
+  #     disk_limit:   3
+  #     set_quota_status: True
+
+  #     <<: *login
+
+  # - name: Add/Set quota rule for type qtree in REST.
+  #   netapp.ontap.na_ontap_quotas:
+  #     state:        "{{ state }}"
+  #     vserver:      "{{ vserver }}"
+  #     volume:       "{{ volume_target }}"
+  #     quota_target: qtree1
+  #     type:         qtree
+  #     file_limit:   2
+  #     disk_limit:   3
+  #     set_quota_status: True
+
+  #     <<: *login
+
+  # Manage Export-policies - Create 'data' policy
+  - name: '{{ Create if state == present else Delete }} volume quota-policy'
+    netapp.ontap.na_ontap_quota_policy:
+      state:    "{{ state }}"
+      name:     "{{ quota_policy_name }}"
+      vserver:  "{{ vserver }}"
+
+      <<: *login
+
+    when: state == 'absent'

@@ -1,0 +1,132 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: "ONTAP Provision: NFS volume" 
+  collections:
+    - netapp.ontap
+
+  vars_files:
+  # - vars/vars_ontap_config_redshirt.yml
+
+  vars:
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+    state: present
+    netapp_hostname:    192.168.7.180
+    netapp_username:    admin 
+    # netapp_password:    # Disabled - Use var_prompt
+    vserver:            ontap-vs01
+
+    aggrname:               ontap_cl01_01_aggr1
+    volname:                quota_test_vol
+    size:                   1
+    size_unit:              gb
+    user_id:                1000
+    group_id:               1000
+    unix_permissions:       ---rwxrwxrwx
+    space_guarantee:        none
+    # language:               c.UTF-8
+    tiering_policy:         none
+    export_policy:          default
+    # qos_policy_group:        
+    # qos_adaptive_policy_group: 
+    percent_snapshot_space: 5
+    snapshot_policy:        default
+    snapshot_auto_delete:
+      state:                "on"
+      commitment:           try
+      defer_delete:         scheduled
+      target_free_space:    30
+      destroy_list:         lun_clone,vol_clone
+      delete_order:         newest_first
+
+    # efficiency_policy:      
+    comment:                ""
+ 
+
+    mode:                     grow  # grow, grow_shrink
+    grow_threshold_percent:   95
+    increment_size:           1g
+    maximum_size:             10g
+    minimum_size:             250m
+    shrink_threshold_percent: 40
+
+
+  vars_prompt:    # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin'
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+      # secret:   true
+
+  tasks:
+
+  ###
+  # Flexgroup: Autoprovision
+  ###
+
+  - name: Create Flex volume 
+    netapp.ontap.na_ontap_volume:
+      <<: *login
+      state:                     "{{ state }}"
+      vserver:                   "{{ vserver }}"
+      aggregate_name:            "{{ aggrname }}"
+      name:                      "{{ volname }}"
+      junction_path:             "/{{ volname }}"
+      size:                      "{{ size }}"
+      size_unit:                 "{{ size_unit       | default('gb') }}"
+      user_id:                   "{{ user_id         | default(omit) }}"
+      group_id:                  "{{ group_id        | default(omit) }}"
+      unix_permissions:          "{{ unix_permissions| default(omit) }}"
+      space_guarantee:           "{{ space_guarantee | default('none') }}"
+      language:                  "{{ language        | default(omit) }}"
+      tiering_policy:            "{{ tiering_policy  | default('none') }}"
+      export_policy:             "{{ export_policy   | default('default') }}"
+      qos_policy_group:          "{{ qos_policy_group | default(omit)  }}"
+      qos_adaptive_policy_group: "{{ qos_adaptive_policy_group | default(omit) }}"
+      percent_snapshot_space:    "{{ percent_snapshot_space | default(omit) }}"
+      snapshot_policy:           "{{ snapshot_policy | default('default') }}"
+      # snapshot_auto_delete: 
+      #   state:                   "{{ snapshot_auto_delete.state }}"
+      #   commitment:              "{{ snapshot_auto_delete.commitment }}"
+      #   defer_delete:            "{{ snapshot_auto_delete.defer_delete }}"
+      #   target_free_space:       "{{ snapshot_auto_delete.target_free_space }}"
+      #   destroy_list:            "{{ snapshot_auto_delete.destroy_list }}"
+      #   delete_order:            "{{ snapshot_auto_delete.delete_order }}"
+      # efficiency_policy:         "{{ efficiency_policy | default('default') }}"
+      comment:                   "{{ comment }}"
+
+    when: state == 'present'
+
+  - name: Modify volume autosize
+    netapp.ontap.na_ontap_volume_autosize:
+      <<: *login
+      # state:                    "{{ state }}"
+
+      vserver:                  "{{ vserver }}"
+      volume:                   "{{ volname }}"
+      mode:                     "{{ mode }}"
+      grow_threshold_percent:   "{{ grow_threshold_percent }}"
+      # increment_size:           "{{ increment_size }}"
+      maximum_size:             "{{ maximum_size }}"
+      minimum_size:             "{{ minimum_size }}"
+      shrink_threshold_percent: "{{ shrink_threshold_percent }}"
+
+    when: state == 'present'
+
+  # Manage Export-policies - Create 'data' policy
+  - name: '{{ Create if state == present else Delete }} volume'
+    netapp.ontap.na_ontap_volume:
+      state:    "{{ state }}"
+      name:     "{{ volname }}"
+      vserver:  "{{ vserver }}"
+
+      <<: *login
+
+    when: state == 'absent'

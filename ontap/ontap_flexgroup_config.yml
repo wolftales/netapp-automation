@@ -1,0 +1,48 @@
+---
+- hosts: localhost
+  name: "ONTAP Cluster Config: {{ cluster.name }}"
+  gather_facts: no
+  vars:
+    state: present
+    fg:
+      name: fg_auto_01
+      size: 200
+      size_unit: tb
+
+    login: &login
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+  # vars_prompt:  # For NetApp Admin Credentials
+  #   - name: netapp_username
+  #     prompt: NetApp 'admin'
+  #   - name: netapp_password
+  #     prompt: NetApp 'admin' password
+  #     secret: true
+  vars_files:
+  - vars/vars_ontap_config_redshirt.yml
+
+  collections:
+  - netapp.ontap
+
+  tasks:
+
+  ###
+  # Flexgroup: Autoprovision
+  ###
+
+  - name: Create Flexgroup volume auto provsion as flex group
+    netapp.ontap.na_ontap_volume:
+      state:            "{{ state }}"
+      <<: *login
+
+      name:               "{{ fg.name }}"
+
+      auto_provision_as: flexgroup
+      size:               "{{ fg.size }}"
+      size_unit:          "{{ fg.size_unit }}"
+
+      space_guarantee:    none
+      vserver:            "{{ vserver }}"
