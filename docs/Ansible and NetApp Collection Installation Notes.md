@@ -58,3 +58,10 @@ ansible-galaxy collection list | grep netapp
 
 `sudo python -m pip install --upgrade pip`
 `sudo pip install --upgrade netapp-lib`
+
+## Working with vCenter, vms & ontap/sg vsims
+
+Leveraging the **deploy** playbooks requires additional libraries:
+
+`sudo pip install pyvmomi`
+`sudo ansible-galaxy collection install community.vmware -f -p /usr/share/ansible/collections/`
