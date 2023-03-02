@@ -1,0 +1,100 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: "ONTAP Provision: NFS Qtree" 
+  collections:
+    - netapp.ontap
+
+  # Varible Precedence - files, prompt, vars
+  # vars_files:
+  # - vars_sample.yml
+
+  vars_prompt:    # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin'
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+      # secret:   true
+
+  vars:
+    netapp_hostname:  192.168.7.180
+    netapp_username:  admin 
+    # netapp_password:    # Disabled - Use var_prompt
+    state:            present
+    vserver:          ontap-vs01
+
+    flexvol_name: quota_test_vol
+    name:         group1
+    from_name:    qtree1
+    export_policy: default
+    security_style: unix
+    oplocks:      disabled
+    unix_permissions: 0777
+    unix_user:    unix_user1
+    unix_group:   group1
+
+    qtree_list:
+    - { flexvol_name: "{{ flexvol_name }}", name: proj1, export_policy: default,
+        security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+        unix_permissions: "{{ unix_permissions }}", unix_user: "{{ unix_user }}",
+        unix_group:   "{{ unix_group }}" }
+    - { flexvol_name: "{{ flexvol_name }}", name: proj2, export_policy: data,
+        security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+        unix_permissions: "{{ unix_permissions }}", unix_user: proj2,
+        unix_group:   unix_group2 }
+    - { flexvol_name: "{{ flexvol_name }}", name: proj3, export_policy: data,
+        security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+        unix_permissions: "{{ unix_permissions }}", unix_user: proj3,
+        unix_group:   unix_group3 }
+    - { flexvol_name: "{{ flexvol_name }}", name: proj4, export_policy: data,
+        security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+        unix_permissions: "{{ unix_permissions }}", unix_user: proj4,
+        unix_group:   unix_group4 }
+    
+
+  
+    # YAML Alias to simplify basic auth
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+
+  tasks:
+
+  ###
+  # Flexgroup: Autoprovision
+  ###
+
+  - name: Create Qtree in Flex volume 
+    netapp.ontap.na_ontap_qtree:
+      <<: *login
+      state:            "{{ state }}"
+      vserver:          "{{ vserver }}"
+
+      name:             "{{ item.name }}"
+      flexvol_name:     "{{ item.flexvol_name }}"
+      export_policy:    "{{ item.export_policy }}"
+      security_style:   "{{ item.security_style }}"
+      oplocks:          "{{ item.oplocks }}"
+      unix_permissions: "{{ item.unix_permissions }}"
+      unix_user:        "{{ item.unix_user }}"
+      unix_group:       "{{ item.unix_group }}"
+
+    loop: "{{ qtree_list }}"
+    when: state == 'present'
+
+
+  # Manage Export-policies - Create 'data' policy
+  - name: "{{ Create if state == present else Delete }} Qtree"
+    netapp.ontap.na_ontap_qtree:
+      state:    "{{ state }}"
+      name:     "{{ volname }}"
+      vserver:  "{{ vserver }}"
+
+      <<: *login
+
+    when: state == 'absent'

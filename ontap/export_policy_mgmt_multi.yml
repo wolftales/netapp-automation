@@ -32,14 +32,15 @@
     anonymous_uid:    65534
     allow_suid:       true
     ntfs_unix_security: ignore
+
     rule_list:
     - { export_policy_name: default, rule_index: 1, client_match: 192.168.7.125/32,
-        ro_rule: sys, rw_rule:  sys, super_user:  sys, protocol: nfs,
+        ro_rule: any, rw_rule:  any, super_user:  any, protocol: any,
         anonymous_uid: 0, allow_suid: true, ntfs_unix_security: ignore }
-    - { export_policy_name: default, rule_index: 1, client_match: 192.168.7.0/24,
+    - { export_policy_name: default, rule_index: 2, client_match: 192.168.7.0/24,
         ro_rule: sys, rw_rule:  sys, super_user:  sys, protocol: nfs,
         anonymous_uid: 65534, allow_suid: true, ntfs_unix_security: ignore }
-    - { export_policy_name: default, rule_index: 2, client_match: 0.0.0.0/0,
+    - { export_policy_name: default, rule_index: 3, client_match: 0.0.0.0/0,
         ro_rule: sys, rw_rule:  none, super_user:  none, protocol: nfs,
         anonymous_uid: 65534, allow_suid: false, ntfs_unix_security: ignore }
     - { export_policy_name: data, rule_index: 1, client_match: 192.168.7.0/24,
@@ -66,29 +67,31 @@
       state:    "{{ state }}"
       vserver:  "{{ vserver }}"
 
-      name:     "{{ export_policy_name }}"
+      name:     "{{ item.export_policy_name }}"
       
+    loop: "{{ rule_list }}"
     when: state == 'present'
 
   # Manage Export-policies - Add rules
   - name: "{{ Add if state == present else Remove }} rule for SVM Export-policy"
     netapp.ontap.na_ontap_export_policy_rule:
       <<: *login
-      state:    "{{ state }}"
-      vserver:  "{{ vserver }}"
+      state:                "{{ state }}"
+      vserver:              "{{ vserver }}"
 
-      policy_name: "{{ export_policy_name }}"
-      client_match: "{{ client_match }}"
-      rule_index: "{{ rule_index }}"
-      ro_rule: "{{ ro_rule }}"
-      rw_rule: "{{ rw_rule }}"
-      super_user_security: "{{ super_user }}"
-      protocol: "{{ protocol }}"
-      anonymous_user_id: "{{ anonymous_uid }}"
-      allow_suid: "{{ allow_suid }}"
-      ntfs_unix_security: "{{ ntfs_unix_security }}"
+      policy_name:          "{{ item.export_policy_name }}"
+      client_match:         "{{ item.client_match }}"
+      rule_index:           "{{ item.rule_index }}"
+      ro_rule:              "{{ item.ro_rule }}"
+      rw_rule:              "{{ item.rw_rule }}"
+      super_user_security:  "{{ item.super_user }}"
+      protocol:             "{{ item.protocol }}"
+      anonymous_user_id:    "{{ item.anonymous_uid }}"
+      allow_suid:           "{{ item.allow_suid }}"
+      ntfs_unix_security:   "{{ item.ntfs_unix_security }}"
 
-    when: state == 'present'
+    loop: "{{ rule_list }}"
+    when: state == 'present' and {{ rule_list }}
 
   # Manage Export-policies - Create 'data' policy
   - name: "{{ Create if state == present else Delete }} Data SVM Export-policy"
@@ -99,4 +102,5 @@
 
       name: "{{ export_policy_name }}"
       
+    loop: "{{ rule_list }}"
     when: state == 'absent'

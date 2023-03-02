@@ -1,0 +1,171 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: Quota Policy Mgmt REST
+  collections:
+    - netapp.ontap
+  # Varible Precedence - files, prompt, vars
+  # vars_files:
+  # - vars_sample.yml
+
+  vars_prompt:    # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin'
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+      # secret:   true
+
+  vars:
+    netapp_hostname:  192.168.7.180
+    netapp_username:  admin 
+    # netapp_password:    # Disabled - Use var_prompt
+    state:            present
+    vserver:          ontap-vs01
+
+    quota_policy_name:     default    # Target for ZAPI, REST operates on active policy
+    volume_target:         quota_test_vol  # Required 
+    set_quota_status:      true       # false, true - on or off
+    quota_target:          ""         # for default user & group quota rules use ""
+    quota_type:            group      # user, group, tree
+    qtree_target:          ""         # for tree type quota this field is ""
+    activate_quota_on_change: resize  # resize,reinitialize,none
+    perform_user_mapping:  true       # false, true - only on user quotas
+    threshold:             ""         # Only available in ZAPI
+    soft_disk_limit:       '-'        # '-' for monitoring, KB is used by default
+    soft_file_limit:       '-'
+    file_limit:            '-'
+    disk_limit:            '-'
+
+    quota_list:
+    - { volume_target:      "{{ volume_target }}",
+        qtree_target:       "{{ qtree_target }}",
+        quota_policy_name:  "{{ quota_policy_name }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        quota_target:       "{{ quota_target }}",
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+    - { quota_policy_name:  "{{ quota_policy_name }}",
+        volume_target:      "{{ volume_target }}",
+        qtree_target:       proj2,
+        quota_target:       unix_group2,
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+    - { quota_policy_name:  "{{ quota_policy_name }}",
+        volume_target:      "{{ volume_target }}",
+        qtree_target:       proj3,
+        quota_target:       unix_group3,
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+    - { quota_policy_name:  "{{ quota_policy_name }}",
+        volume_target:      "{{ volume_target }}",
+        qtree_target:       proj4,
+        quota_target:       unix_group4,
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+
+    # YAML Alias to simplify basic auth
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+  tasks:
+
+  # Manage quota-policies - Create
+  - name: "{{ Create if state == present else Delete }} volume quota-policy"
+    netapp.ontap.na_ontap_quota_policy:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ quota_policy_name }}"
+
+    when: state == 'present'
+
+  # Manage Export-policies - Add rules
+  - name: 'Add/Set user quota rule(s) for type & target in REST.'
+    netapp.ontap.na_ontap_quotas:
+      <<: *login
+      state:                "{{ state }}"
+      vserver:              "{{ vserver }}"
+
+      volume:               "{{ item.volume_target }}"
+      policy:               "{{ item.quota_policy_name }}"
+      quota_target:         "{{ item.quota_target }}"  # user, group, tree: Only used for ZAPI, REST uses active policy on target
+      qtree:                "{{ item.qtree_target | default(omit) }}"
+      type:                 "{{ item.quota_type }}"
+      activate_quota_on_change: "{{ item.activate_quota_on_change }}"
+      perform_user_mapping:     "{{ item.perform_user_mapping | default(omit) }}"
+      threshold:            "{{ item.threshold | default(omit) }}"
+      soft_disk_limit:      "{{ item.soft_disk_limit }}"
+      soft_file_limit:      "{{ item.soft_file_limit }}"
+      file_limit:           "{{ item.file_limit }}"
+      disk_limit:           "{{ item.disk_limit }}"
+      set_quota_status:     "{{ item.set_quota_status }}"
+    
+    loop: "{{ quota_list }}" 
+    when: state == 'present' and quota_type == 'user'
+
+  # Manage Export-policies - Add rules
+  - name: 'Add/Set group / tree quota rule(s) for type & target in REST.'
+    netapp.ontap.na_ontap_quotas:
+      <<: *login
+      state:                "{{ state }}"
+      vserver:              "{{ vserver }}"
+      
+      volume:               "{{ item.volume_target }}"
+      policy:               "{{ item.quota_policy_name }}"
+      quota_target:         "{{ item.quota_target }}"  # user, group, tree: Only used for ZAPI, REST uses active policy on target
+      qtree:                "{{ item.qtree_target | default(omit) }}"
+      type:                 "{{ item.quota_type }}"
+      activate_quota_on_change: "{{ item.activate_quota_on_change }}"
+      threshold:            "{{ item.threshold | default(omit) }}"
+      soft_disk_limit:      "{{ item.soft_disk_limit }}"
+      soft_file_limit:      "{{ item.soft_file_limit }}"
+      file_limit:           "{{ item.file_limit }}"
+      disk_limit:           "{{ item.disk_limit }}"
+      set_quota_status:     "{{ item.set_quota_status }}"
+    
+    loop: "{{ quota_list }}" 
+    when: state == 'present' and quota_type != 'user'  
+
+  # Manage Export-policies - Create 'data' policy
+  - name: "{{ Create if state == present else Delete }} volume quota-policy"
+    netapp.ontap.na_ontap_quota_policy:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ quota_policy_name }}"
+
+    when: state == 'absent'

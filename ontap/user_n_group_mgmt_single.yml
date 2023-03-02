@@ -1,0 +1,91 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: User / Group Mgmt REST
+  collections:
+    - netapp.ontap
+  
+  # Varible Precedence - files, prompt, vars
+  # vars_files:
+  # - vars_sample.yml
+
+  vars_prompt:    # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin'
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+      # secret:   true
+
+  vars:
+    netapp_hostname:  192.168.7.180
+    netapp_username:  admin 
+    # netapp_password:    # Disabled - Use var_prompt
+    state:            present
+    vserver:          ontap-vs01
+
+    user_name:        ken
+    full_name:        'Mr. ken'
+    uid:              1000
+    primary_gid:      1000
+    
+    group_name:   ken
+    gid:          1000
+    group_users:  ken
+
+    # YAML Alias to simplify basic auth
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+  tasks:
+
+  # Create unix-group
+  - name: "Create unix-group: {{ group_name }}"
+    netapp.ontap.na_ontap_unix_group:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ group_name }}"
+      id:       "{{ gid }}"
+      users:    "{{ group_users }}"
+
+    when: state == 'present'
+  
+  - name: "Create unix-user: {{ user_name }}"
+    netapp.ontap.na_ontap_unix_user:
+      <<: *login
+      state:      "{{ state }}"
+      vserver:    "{{ vserver }}"
+
+      name:       "{{ user_name }}"
+      group_id:   "{{ primary_gid }}"
+      id:         "{{ uid }}"
+      full_name:  "{{ full_name }}"
+    
+    when: state == 'present'
+
+  - name: "Delete unix-user: {{ user_name }}"
+    netapp.ontap.na_ontap_unix_user:
+      <<: *login
+      state:      "{{ state }}"
+      vserver:    "{{ vserver }}"
+
+      name:       "{{ user_name }}"
+    
+    when: state == 'absent'
+
+  # Delete unix-group
+  - name: "Create unix-group: {{ group_name }}"
+    netapp.ontap.na_ontap_unix_group:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ group_name }}"
+
+    when: state == 'absent'

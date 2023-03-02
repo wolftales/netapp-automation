@@ -1,0 +1,118 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: User / Group Mgmt REST
+  collections:
+    - netapp.ontap
+  
+  # Varible Precedence - files, prompt, vars
+  # vars_files:
+  # - vars_sample.yml
+
+  vars_prompt:    # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin'
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+      # secret:   true
+
+  vars:
+    netapp_hostname:  192.168.7.180
+    netapp_username:  admin 
+    # netapp_password:    # Disabled - Use var_prompt
+    state:            present
+    vserver:          ontap-vs01
+
+    # user_name:        unix_user1
+    # full_name:        'Mr. UNIX User1'
+    # uid:              10001
+    # primary_gid:      10000
+    
+    # group_name:   unix_group1
+    # gid:          10000
+    # group_users:  user1,user2
+    
+    user_list:
+    - { user_name: 'proj1', full_name: 'Mr. Proj1 User', uid: 10000, primary_gid: 10000 }
+    - { user_name: 'unix_user1', full_name: 'Mr. UNIX User1', uid: 10001, primary_gid: 10000 }
+    - { user_name: 'unix_user2', full_name: 'Mr. UNIX User2', uid: 10002, primary_gid: 10000 }
+    - { user_name: 'proj2', full_name: 'Mr. Proj2 User', uid: 11001, primary_gid: 10001 }
+    - { user_name: 'unix_user3', full_name: 'Mr. UNIX User3', uid: 11003, primary_gid: 10001 }
+    - { user_name: 'unix_user4', full_name: 'Mr. UNIX User4', uid: 11004, primary_gid: 10001 }
+    - { user_name: 'proj3', full_name: 'Mr. Proj3 User', uid: 12001, primary_gid: 10002 }
+    - { user_name: 'unix_user5', full_name: 'Mr. UNIX User5', uid: 12005, primary_gid: 10002 }
+    - { user_name: 'unix_user6', full_name: 'Mr. UNIX User6', uid: 12006, primary_gid: 10002 }
+    - { user_name: 'proj4', full_name: 'Mr. Proj4 User', uid: 13001, primary_gid: 10003 }
+    - { user_name: 'unix_user7', full_name: 'Mr. UNIX User7', uid: 13007, primary_gid: 10003 }
+    - { user_name: 'unix_user8', full_name: 'Mr. UNIX User8', uid: 13008, primary_gid: 10003 }
+    - { user_name: 'unix_user9', full_name: 'Mr. UNIX User9', uid: 13009, primary_gid: 10003 }
+    
+    group_list:
+    - { group_name: 'unix_group1', gid: 10000, group_users: 'unix_user1,unix_user2' }
+    - { group_name: 'unix_group2', gid: 10001, group_users: '' }
+    - { group_name: 'unix_group3', gid: 10002, group_users: '' }
+    - { group_name: 'unix_group4', gid: 10003, group_users: '' }
+
+
+    # YAML Alias to simplify basic auth
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+  tasks:
+
+  # Create unix-group
+  - name: "Create unix-group: {{ group_name }}"
+    netapp.ontap.na_ontap_unix_group:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ item.group_name }}"
+      id:       "{{ item.gid }}"
+      users:    "{{ item.group_users }}"
+
+    loop: "{{ group_list }}"
+    when: state == 'present'
+  
+  - name: "Create unix-user: {{ user_name }}"
+    netapp.ontap.na_ontap_unix_user:
+      <<: *login
+      state:      "{{ state }}"
+      vserver:    "{{ vserver }}"
+
+      name:       "{{ item.user_name }}"
+      full_name:  "{{ item.full_name }}"
+      id:         "{{ item.uid }}"
+      group_id:   "{{ item.primary_gid }}"
+
+    
+    loop: "{{ user_list }}"
+    when: state == 'present'
+
+  - name: "Delete unix-user: {{ user_name }}"
+    netapp.ontap.na_ontap_unix_user:
+      <<: *login
+      state:      "{{ state }}"
+      vserver:    "{{ vserver }}"
+
+      name:       "{{ item.user_name }}"
+    
+    loop: "{{ user_list }}"
+    when: state == 'absent'
+
+  # Delete unix-group
+  - name: "Create unix-group: {{ group_name }}"
+    netapp.ontap.na_ontap_unix_group:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ item.group_name }}"
+
+    loop: "{{ group_list }}"
+    when: state == 'absent'
