@@ -1,0 +1,30 @@
+---
+- name: Disable disk auto-assign on all nodes in the cluster
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  collections:
+    - netapp.ontap
+
+  vars:
+    login: &login
+      hostname: "cluster1"
+      username: "admin"
+      password: "*****"
+      https: yes
+      validate_certs: no
+
+  tasks:
+    - name: Get list of nodes in the cluster
+      na_ontap_rest_info:
+        <<: *login
+        gather_subset:
+          - cluster/nodes
+      register: node_list
+
+    - name: Disable disk auto-assign on all nodes
+      na_ontap_disk_options:
+        <<: *login
+        node: "{{ item.name }}"
+        autoassign: false
+      loop: "{{ node_list['ontap_info']['cluster/nodes']['records'] }}"

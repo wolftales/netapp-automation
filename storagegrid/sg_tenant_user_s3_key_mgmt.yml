@@ -78,18 +78,6 @@
       register: s3_cred
       when: state == "present"
 
-    # - name: Delete a s3 key for our users
-    #   netapp.storagegrid.na_sg_org_user_s3_key:
-    #     <<: *org_auth
-
-    #     state: "{{ state }}"
-    #     unique_user_name: "user/{{ item }}"
-    #     access_key: "{{ tenant_user_key }}"
-
-    #   with_items: "{{ tenant_user_name }}"
-    #   register: s3_cred
-    #   when: state == "absent"
-
     - name: Check folder for storing credentials
       stat:
         path: "../files/s3_keys/{{ tenant_name }}"
