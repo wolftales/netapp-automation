@@ -1,3 +1,7 @@
+# Example: Setting up Ansible & the NetApp collection
+
+There are multiple ways with different pros and cons for managing ansible. This process outlines the major steps. You can switch things up as you perfer.
+
 ## Installing / Updating python3
 
 `sudo apt install python3`
@@ -48,7 +52,7 @@ sudo ansible-galaxy collection install netapp.ontap -p /usr/share/ansible/collec
 
 ## Testing NetApp Collection & Module Availability
 
-```
+```shell
 pip list | grep ansible 
 pip list | grep netapp-lib
 ansible-galaxy collection list | grep netapp
@@ -61,7 +65,7 @@ ansible-galaxy collection list | grep netapp
 
 ## Working with vCenter, vms & ontap/sg vsims
 
-Leveraging the **deploy** playbooks requires additional libraries:
+Leveraging the NetApp **deploy** vm playbooks requires additional libraries beyond the NetApp collection:
 
 `sudo pip install pyvmomi`
 `sudo ansible-galaxy collection install community.vmware -f -p /usr/share/ansible/collections/`
