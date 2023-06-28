@@ -1,0 +1,74 @@
+---
+- hosts: localhost
+  gather_facts: false
+  name: API/Login Mgmt REST
+  collections:
+    - netapp.ontap
+  
+  # Varible Precedence - files, prompt, vars
+  # vars_files:
+  # - vars_sample.yml
+
+  vars_prompt:    # For NetApp Admin Credentials
+    # - name: netapp_username
+    #   prompt: NetApp 'admin'
+    - name:     "netapp_password"
+      prompt:   "Enter the NetApp Admin Password"
+      private:  yes
+
+  vars:
+    netapp_hostname:  192.168.7.200
+    netapp_username:  admin 
+    # netapp_password:    # Disabled - Using var_prompt
+    state:            present
+    vserver:          ontap-vs01
+
+    user_name:        api_vsadmin
+    role:             vsadmin
+    login_methods:
+    - application:    ontapi
+      authentication_methods: cert
+      second_authentication_method: none  # For SSH using MFA
+    # - application:    http
+    #   authentication_methods: cert
+    #   second_authentication_method: none  # For SSH using MFA
+    - application:    http
+      authentication_methods: cert,password
+      second_authentication_method: none  # For SSH using MFA
+
+    # YAML Alias to simplify basic auth
+    login: &login
+      hostname:       "{{ netapp_hostname }}"
+      username:       "{{ netapp_username }}"
+      password:       "{{ netapp_password }}"
+      https:          true
+      validate_certs: false
+
+  tasks:
+
+  # Create API/Login User
+  - name: "Create API/Login User: {{ user_name }}"
+    netapp.ontap.na_ontap_user:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ user_name }}"
+      application_dicts:  "{{ login_methods }}"
+      role_name: "{{ role }}"
+      set_password: netapp1234
+
+    when: state == 'present'
+
+  # Delete API/Login User
+  - name: "Delete API/Login User: {{ user_name }}"
+    netapp.ontap.na_ontap_user:
+      <<: *login
+      state:    "{{ state }}"
+      vserver:  "{{ vserver }}"
+
+      name:     "{{ user_name }}"
+      application_dicts:  "{{ login_methods }}"
+      role_name: "{{ role }}"
+
+    when: state == 'absent'

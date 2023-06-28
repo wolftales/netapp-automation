@@ -4,5 +4,6 @@
             "file:///mnt/c/Users/wolft/OneDrive/Documents/GitHub/netapp-automation/storagegrid/sg_grid_basic_config.yml",
             "file:///home/ken/Documents/git/netapp-automation/storagegrid/sg_tenant_bucket_mgmt.yml"
         ]
-    }
+    },
+    "ansible.python.interpreterPath": "/bin/python"
 }
