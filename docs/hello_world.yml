@@ -1,0 +1,14 @@
+###############################################
+# Author:       Ken Hillier
+# Date:         19 Sep 23
+# Description:  'Hello World!'
+###############################################
+---
+- hosts: localhost
+  gather_facts: false
+  name: "'Hello World!' Playbook"
+
+  tasks:
+    - name: Print 'Hello World!'
+      ansible.builtin.debug:
+        msg: "Hello World!"
