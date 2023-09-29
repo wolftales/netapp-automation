@@ -85,7 +85,9 @@ with volume.yml:
 - ticket & --extra-vars
 - vars_files
 
-## Advanced YAML - YAML Alias
+# Advanced Ansible Techniques
+
+## YAML Alias
 
 ```
 vars:
