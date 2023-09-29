@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   gather_facts: false
-  name: Basic Connectivity Test
+  name: Connectivity Test & Display ONTAP Info
   collections:
     - netapp.ontap
   module_defaults:
@@ -18,30 +18,26 @@
   vars_prompt:
     - name: "netapp_password"
       prompt: "Enter the NetApp Admin Password"
-      private: yes
+      private: true
+      confirm: true
   vars:
     netapp_hostname: 192.168.7.200
     netapp_username: admin
     # YAML Alias - Replaced by module_defaults
-    # login: &login
-    #   hostname: "{{ netapp_hostname }}"
-    #   username: "{{ netapp_username }}"
-    #   password: "{{ netapp_password }}"
-    #   https: true
-    #   validate_certs: false
+    login: &login
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
 
   tasks:
-    - name: "Connectivity Test & Display ONTAP_info: subset"
+    - name: "Display ONTAP_info: ZAPI"
       netapp.ontap.na_ontap_info:
         state: info
         gather_subset:
           - ontap_system_version
           - aggregate_info
-        # hostname: "{{ netapp_hostname }}"
-        # username: "{{ netapp_username }}"
-        # password: "{{ netapp_password }}"
-        # https: true
-        # validate_certs: false
       register: ontap_info
 
     - name: Print ONTAP Response
