@@ -1,3 +1,4 @@
+# Requires Ansible 2.12+ for module_defaults
 ---
 - hosts: localhost
   gather_facts: false
