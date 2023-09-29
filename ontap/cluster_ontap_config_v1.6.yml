@@ -1,22 +1,22 @@
 ####
-# Deccription: 
+# Deccription:
 # This NetApp ONTAP automation workflow was created to simplify the cluster and vserver configuration of LAB VMs.
 # These ONTAP VSIMs were used for demonstration, testing, and prototyping various features. This process produces a
-# standard configuration that makes it easy to adjust or add to, and allows 
-# 
+# standard configuration that makes it easy to adjust or add to, and allows
+#
 # Requirements:
-#   - Ansible 2.9+ 
+#   - Ansible 2.9+
 #   - NetApp Ansible collection: netapp.ontap
 #   - ONTAP VSIM, Select or appliance based endpoint/target
-#   - ONTAP Cluster basic configuration complete: 
-# 
+#   - ONTAP Cluster basic configuration complete:
+#
 # Revision
 #   - 1.1 03 Jun 20 - Drafted re-useable workflow for AWX
 #   - 1.2 14 May 21 - Streamlined / Updated - Added new module functionality
 #   - 1.3 13 Jul 21 - Streamlined varibles to accept more dynamic network configs
 #   - 1.4 08 Nov 21 - Validated against vanilla roles except for Load-sharing Mirror role
-#   - 1.5 18 Mar 22 - Validated against ONTAP 9.10.1, updated varible nesting, staged CIFS config 
-#   - 1.6 12 Jun 22 - Validated against ONTAP 9.10.1, updated varible nesting, staged CIFS config 
+#   - 1.5 18 Mar 22 - Validated against ONTAP 9.10.1, updated varible nesting, staged CIFS config
+#   - 1.6 12 Jun 22 - Validated against ONTAP 9.10.1, updated varible nesting, staged CIFS config
 #
 # Known restrictions:
 #   - clusters and vservers with dashes in the name break some vanella automation (aggr & volume names can not contain dashes)
@@ -24,7 +24,7 @@
 #   - Sensative credentials should leverage var_prompt, uncomment those lines in the playbook
 #   - LS Mirror role can only be run once - It isn't idempotent
 #   - Disabled LS Mirror - recent updates, either ONTAP, modules, or ansible, change output
-# 
+#
 ####
 
 ---
@@ -54,203 +54,218 @@
   #     private: true
   #     unsafe: false
   vars_files:
-  # - vars/vars_ontap_ontap-cl01.yml
-  # - vars/vars_ontap_redshirt.yml
-  - vars/vars_ontap_sandbox.yml
-  # - vars/vars_ontap_testTap.yml
-  # - vars/vars_ontap_config_vsim_single.yml
-  # - vars/vars_ontap_config_role_single.yml
-  - vars/vars_ontap_config_vsim_HA.yml
-  - vars/vars_ontap_config_role_HA.yml
-  - vars/vars_vsim_licenses.yml
+    # - vars/vars_ontap_ontap-cl01.yml
+    # - vars/vars_ontap_redshirt.yml
+    - vars/vars_ontap_sandbox.yml
+    # - vars/vars_ontap_testTap.yml
+    # - vars/vars_ontap_config_vsim_single.yml
+    # - vars/vars_ontap_config_role_single.yml
+    - vars/vars_ontap_config_vsim_HA.yml
+    - vars/vars_ontap_config_role_HA.yml
+    - vars/vars_vsim_licenses.yml
 
   collections:
-  - netapp.ontap
+    - netapp.ontap
 
   tasks:
+    ###
+    # Network: Broadcast-domain split
+    ###
 
-  ###
-  # Network: Broadcast-domain split
-  ###
+    # - name: Manage Active Ansible MGMT network interface
+    #   na_ontap_broadcast_domain:
+    #     state: present
+    #     <<: *login
+    #     from_name: "{{ item.old_bd | default('Default') }}"
+    #     name: "{{ item.new_bd }}"
+    #     mtu: "1500"
+    #     ipspace: Default
+    #     ports: "{{ item.ports }}"
+    #   loop: "{{ bcd.split_ports }}"
+    #   when: bcd.split_ports is defined and bcd.split_ports != None
 
-  - name: Manage Active Ansible MGMT network interface
-    na_ontap_broadcast_domain:
-      state:            present
-      <<: *login
-      from_name:        "{{ item.old_bd | default('Default') }}"
-      name:             "{{ item.new_bd }}"
-      mtu:              '1500'
-      ipspace:          Default
-      ports:            "{{ item.ports }}"
-    loop:               "{{ bcd.split_ports }}"
-    when: bcd.split_ports is defined and bcd.split_ports != None
+    ###
+    # Role-Based Configuration
+    # Note: Based on collection(s)
+    #  - netapp.ontap 21.8.1
+    ###
 
-  ###
-  # Role-Based Configuration
-  # Note: Based on collection(s)
-  #  - netapp.ontap 21.8.1
-  ###
+    ###
+    # Cluster Configuration
+    - name: ONTAP Cluster Standard Configuration
+      include_role:
+        # name: na_ontap_cluster_config
+        name: na_ontap_cluster_config_v3
 
-  ###
-  # Cluster Configuration
-  - name: ONTAP Cluster Standard Configuration
-    include_role:
-      # name: na_ontap_cluster_config
-      name: na_ontap_cluster_config_v3
+    ###
+    # Vserver configuration
+    - name: ONTAP Vserver Configuration
+      include_role:
+        # name: na_ontap_vserver_create
+        name: na_ontap_vserver_create_v2
 
-  ###
-  # Vserver configuration
-  - name: ONTAP Vserver Configuration
-    include_role:
-      # name: na_ontap_vserver_create
-      name: na_ontap_vserver_create_v2
-  
-  ###
-  # Vserver configuration
-  # - name: ONTAP Vserver Configuration
-  #   include_role:
-  #     name: na_ontap_create_ls_mirrors
+    ###
+    # Vserver configuration
+    # - name: ONTAP Vserver Configuration
+    #   include_role:
+    #     name: na_ontap_create_ls_mirrors
 
-  ###
-  # Non-Role: Standard Configuration
-  # Note:
-  ###
+    ###
+    # Non-Role: Standard Configuration
+    # Note:
+    ###
 
-  ###
-  # timezone
+    ###
+    # timezone
 
-  - name: 'Set cluster timezone {{ clus.net.time.zone }}'
-    na_ontap_command:
-      <<: *login
+    - name: "Set cluster timezone {{ clus.net.time.zone }}"
+      na_ontap_command:
+        <<: *login
 
-      command:        [ 'cluster', 'date', 'modify',
-                        '-timezone', "{{ clus.net.time.zone }}" ]
+        command:
+          ["cluster", "date", "modify", "-timezone", "{{ clus.net.time.zone }}"]
 
-  ###
-  # Set System SNMP Location value
-  - name: 'Set cluster SNMP Location'
-    na_ontap_command:
-      <<: *login
-      privilege: 'advanced'
+    ###
+    # Set System SNMP Location value
+    - name: "Set cluster SNMP Location"
+      na_ontap_command:
+        <<: *login
+        privilege: "advanced"
 
-      command:        [ 'system', 'snmp', 'location',
-                        '-location', "{{ clus.loc }}" ]
-    when: clus.loc is defined and clus.loc != None
+        command: ["system", "snmp", "location", "-location", "{{ clus.loc }}"]
+      when: clus.loc is defined and clus.loc != None
 
-  ###
-  # Enable discovery tools for Config Advisor & cluster interconnect switch visibility
-  ###
+    ###
+    # Enable discovery tools for Config Advisor & cluster interconnect switch visibility
+    ###
 
-  ###
-  # Configure cdpd
-  - name: 'Enable CDP'
-    na_ontap_command:
-      <<: *login
-      privilege: 'advanced'
+    ###
+    # Configure cdpd
+    - name: "Enable CDP"
+      na_ontap_command:
+        <<: *login
+        privilege: "advanced"
 
-      command:        [ 'system', 'node', 'run',
-                        '-node', '*', 'options', 'cdpd.enable', 'enable' ]
+        command:
+          [
+            "system",
+            "node",
+            "run",
+            "-node",
+            "*",
+            "options",
+            "cdpd.enable",
+            "enable",
+          ]
 
-  ###
-  # Configure lldp
-  - name: 'Enable LLDP'
-    na_ontap_command:
-      <<: *login
-      privilege: 'advanced'
+    ###
+    # Configure lldp
+    - name: "Enable LLDP"
+      na_ontap_command:
+        <<: *login
+        privilege: "advanced"
 
-      command:        [ 'system', 'node', 'run',
-                        '-node', '*', 'options', 'lldp.enable', 'enable' ]
+        command:
+          [
+            "system",
+            "node",
+            "run",
+            "-node",
+            "*",
+            "options",
+            "lldp.enable",
+            "enable",
+          ]
 
-  ###
-  # Autosupport: Configuration
-  # Note: Comment out if using updated role: na_ontap_cluster_config_v2
-  ###
+    ###
+    # Autosupport: Configuration
+    # Note: Comment out if using updated role: na_ontap_cluster_config_v2
+    ###
 
-  - name: Enable Autosupport Configuration
-    na_ontap_autosupport:
-      state: present
-      node_name:            "{{ item.node }}"
-      proxy_url:            "{{ item.proxy_url | default(omit)  }}"
-      transport:            "{{ item.transport | default(omit)  }}"
-      hostname_in_subject:  "{{ item.hostsubj | default('false') }}"
-      from_address:         "{{ item.from | default(omit)  }}"
-      noteto:               "{{ item.noteto | default(omit)  }}"
-      to_addresses:         "{{ item.to | default(omit)  }}"
-      partner_addresses:    "{{ item.partner | default(omit) }}"
-      mail_hosts:           "{{ item.mailhosts }}"
-      hostname:             "{{ netapp_hostname }}"
-      username:             "{{ netapp_username }}"
-      password:             "{{ netapp_password }}"
-      https:                true
-      validate_certs:       "{{ validate_certs }}"
+    - name: Enable Autosupport Configuration
+      na_ontap_autosupport:
+        state: present
+        node_name: "{{ item.node }}"
+        proxy_url: "{{ item.proxy_url | default(omit)  }}"
+        transport: "{{ item.transport | default(omit)  }}"
+        hostname_in_subject: "{{ item.hostsubj | default('false') }}"
+        from_address: "{{ item.from | default(omit)  }}"
+        noteto: "{{ item.noteto | default(omit)  }}"
+        to_addresses: "{{ item.to | default(omit)  }}"
+        partner_addresses: "{{ item.partner | default(omit) }}"
+        mail_hosts: "{{ item.mailhosts }}"
+        hostname: "{{ netapp_hostname }}"
+        username: "{{ netapp_username }}"
+        password: "{{ netapp_password }}"
+        https: true
+        validate_certs: "{{ validate_certs }}"
 
-    with_items:             "{{ asup_config }}"
+      with_items: "{{ asup_config }}"
 
-    when: asup_config is defined and asup_config != None
+      when: asup_config is defined and asup_config != None
 
-  ###
-  # User & Role Configuration
-  ###
+    ###
+    # User & Role Configuration
+    ###
 
-  # Creates user roles.
-  - name: Create User Role
-    na_ontap_user_role:
-      state: present
-      name: "{{ item.name }}"
-      command_directory_name: "{{ item.cmddir }}"
-      access_level: "{{ item.level }}"
-      vserver: "{{ item.svm }}"
-      <<: *login
-    with_list: "{{ role_cmds }}"
-    when: role_cmds is defined and role_cmds != None
+    # Creates user roles.
+    - name: Create User Role
+      na_ontap_user_role:
+        state: present
+        name: "{{ item.name }}"
+        command_directory_name: "{{ item.cmddir }}"
+        access_level: "{{ item.level }}"
+        vserver: "{{ item.svm }}"
+        <<: *login
+      with_list: "{{ role_cmds }}"
+      when: role_cmds is defined and role_cmds != None
 
-  # Creates users.
-  - name: Create Users
-    na_ontap_user:
-      state: present
-      name: "{{ item.name }}"
-      application: "{{ item.app }}"
-      authentication_method: "{{ item.auth }}"
-      role_name: "{{ item.role }}"
-      vserver: "{{ item.svm }}"
-      <<: *login
-    with_list: "{{ user_list }}"
-    when: user_list is defined and user_list != None
-    
+    # Creates users.
+    - name: Create Users
+      na_ontap_user:
+        state: present
+        name: "{{ item.name }}"
+        application: "{{ item.app }}"
+        authentication_method: "{{ item.auth }}"
+        role_name: "{{ item.role }}"
+        vserver: "{{ item.svm }}"
+        <<: *login
+      with_list: "{{ user_list }}"
+      when: user_list is defined and user_list != None
 
-  ###
-  # Export-Policies: Create and Manage
-  # Note: Comment this out if not needed
-  ###
+    ###
+    # Export-Policies: Create and Manage
+    # Note: Comment this out if not needed
+    ###
 
-  - name: 'Remove default Export-policy entry: RO = ALL'
-    na_ontap_export_policy_rule:
-      state:                absent
-      policy_name:          default
-      vserver:              "{{ svm.name }}"
-      rule_index:           "{{ item.rule_index | default(1) }}"
-      <<: *login
+    - name: "Remove default Export-policy entry: RO = ALL"
+      na_ontap_export_policy_rule:
+        state: absent
+        policy_name: default
+        vserver: "{{ svm.name }}"
+        rule_index: "{{ item.rule_index | default(1) }}"
+        <<: *login
 
-  - name: Create SVM Export-policy
-    na_ontap_export_policy:
-      state:                "{{ state }}"
-      name:                 "{{ item.name }}"
-      vserver:              "{{ item.svm }}"
-      <<: *login
-    loop:                   "{{ svm_export_policy_name }}"
-    when: svm_export_policy_name is defined and svm_export_policy_name != None
+    - name: Create SVM Export-policy
+      na_ontap_export_policy:
+        state: "{{ state }}"
+        name: "{{ item.name }}"
+        vserver: "{{ item.svm }}"
+        <<: *login
+      loop: "{{ svm_export_policy_name }}"
+      when: svm_export_policy_name is defined and svm_export_policy_name != None
 
-  - name: Setup "Default" and SVM Export-policies
-    na_ontap_export_policy_rule:
-      state:                "{{ state }}"
-      policy_name:          "{{ item.name }}"
-      vserver:              "{{ item.svm }}"
-      client_match:         "{{ item.client_match }}"
-      protocol:             "{{ item.protocol }}"
-      ro_rule:              "{{ item.ro_rule }}"
-      rw_rule:              "{{ item.rw_rule }}"
-      rule_index:           "{{ item.rule_index | default(omit) }}"
-      super_user_security:  "{{ item.super_user_security }}"
-      <<: *login
-    loop:                   "{{ export_policy_rules_list }}"
-    when: export_policy_rules_list is defined and export_policy_rules_list != None
+    - name: Setup "Default" and SVM Export-policies
+      na_ontap_export_policy_rule:
+        state: "{{ state }}"
+        policy_name: "{{ item.name }}"
+        vserver: "{{ item.svm }}"
+        client_match: "{{ item.client_match }}"
+        protocol: "{{ item.protocol }}"
+        ro_rule: "{{ item.ro_rule }}"
+        rw_rule: "{{ item.rw_rule }}"
+        rule_index: "{{ item.rule_index | default(omit) }}"
+        super_user_security: "{{ item.super_user_security }}"
+        <<: *login
+      loop: "{{ export_policy_rules_list }}"
+      when: export_policy_rules_list is defined and export_policy_rules_list != None
