@@ -23,6 +23,7 @@
   vars:
     netapp_hostname: 192.168.7.200
     netapp_username: admin
+    # netapp_password: netapp1234  # Needs to be commented out if using var_prompts
     # YAML Alias - Replaced by module_defaults
     login: &login
       hostname: "{{ netapp_hostname }}"
@@ -32,12 +33,20 @@
       validate_certs: false
 
   tasks:
-    - name: "Display ONTAP_info: ZAPI"
-      netapp.ontap.na_ontap_info:
-        state: info
+    # - name: "Display ONTAP_info: ZAPI"
+    #   netapp.ontap.na_ontap_info:
+    #     state: info
+    #     # <<: *login  # Not needed because of the module_defaults
+    #     gather_subset:
+    #       - ontap_system_version
+    #       - aggregate_info
+    #   register: ontap_info
+
+    - name: "Display ONTAP_info: REST"
+      netapp.ontap.na_ontap_rest_info:
         gather_subset:
-          - ontap_system_version
-          - aggregate_info
+          # - svm/svms
+          - demo
       register: ontap_info
 
     - name: Print ONTAP Response
