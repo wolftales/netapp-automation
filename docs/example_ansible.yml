@@ -22,7 +22,7 @@
       private: true
       confirm: true
   vars:
-    netapp_hostname: 192.168.7.200
+    netapp_hostname: 192.168.7.190
     netapp_username: admin
     # netapp_password: netapp1234  # Needs to be commented out if using var_prompts
     # YAML Alias - Replaced by module_defaults
@@ -47,7 +47,8 @@
       netapp.ontap.na_ontap_rest_info:
         gather_subset:
           # - svm/svms
-          - demo
+          # - demo
+          - cluster/licensing/licenses
       register: ontap_info
 
     - name: Print ONTAP Response

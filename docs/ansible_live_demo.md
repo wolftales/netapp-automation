@@ -89,7 +89,7 @@ with volume.yml:
 
 ## YAML Alias
 
-```
+```yml
 vars:
   login: &login
     hostname: "{{ netapp_hostname }}"
@@ -103,6 +103,19 @@ tasks:
     <<: *login
 ```
 
+## Module Defaults
+
+```yml
+module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      # hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: always
+```
+
 ## Credential Mgmt
 
 1. clear text
@@ -112,7 +125,7 @@ tasks:
 
 ## VARS Prompt - Password
 
-```
+```yml
 vars_prompt:
 - name: "netapp_password"
   prompt: "Enter the NetApp Admin password"
@@ -172,7 +185,7 @@ vars_files:
 
 * Original section example:
 
-  ```
+  ```yml
   hostname: Ansible01
   username: admin
   password: netapp123
@@ -184,7 +197,7 @@ vars_files:
 
 - Updated section example:
 
-  ```
+  ```yml
   hostname: Ansible01
   validate_certs: false
   cert_filepath: admin.pem
@@ -242,7 +255,7 @@ vars_files:
 
 ##### Input Configuration
 
-```
+```yml
 fields:
   - id: netapp_username
     type: string
@@ -255,7 +268,7 @@ fields:
 
 ##### Injector Configuration
 
-```
+```yml
 extra_vars:
   netapp_username: '{{ netapp_username }}' 
   netapp_password: '{{ netapp_password }}'
