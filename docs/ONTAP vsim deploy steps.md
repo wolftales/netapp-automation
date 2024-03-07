@@ -18,19 +18,21 @@ Steps running the automation:
 On node #2
 
 ```shell
-cluster setup  # join
+cluster setup  # join with node 1's cluster LIF ip 169.254.xxx.xxx
+network port show  # See '-'s 
 broadcast-domain add-ports -broadcast-domain Default -ports sandbox-02:e0d,sandbox-02:e0d,sandbox-02:e0e,sandbox-02:e0f
 network interface modify -vserver sandbox -lif sandbox-02_mgmt1 -home-port e0d
 broadcast-domain add-ports -broadcast-domain Default -ports sandbox-02:e0c
 network interface modify -vserver sandbox -lif sandbox-02_mgmt1 -home-port e0c
 network interface migrate -vserver sandbox -lif sandbox-02_mgmt1 -destination-node sandbox-02 -destination-port e0c
-
+disk assign -all -node ontap-cl01-01  # HNAF doesn't assign drives before creating aggrs
+disk assign -all -node ontap-cl01-02  # HNAF doesn't assign drives before creating aggrs
 ```
 ## Snapshot both VMs
 
 ```shell
 ONTAP <Version>
 Fresh Install - 2 Nodes
-Node 2 joined, BD Clean-up
+Node 2 joined, BDs Clean-up, disks assigned
 No Advanced Config
 ```

@@ -8,7 +8,7 @@
 #
 # Known limitations:
 #   -  Second node comes through with broadcast domains messed up if cluster and data ports
-#      are visible to one another.
+#      share the same network broadcast domain.
 #   - Adjust broadcast domain membership after running, and before additional configuration
 ###
 ---
@@ -32,8 +32,8 @@
     vm_datastore:       "datastore1"
   vars_files:
     - vars/vars_vcenter_exampleLab.yml
-    # - vars/vars_ontap_ontap-cl01.yml
-    - vars/vars_ontap_sandbox.yml
+    - vars/vars_ontap_ontap-cl01.yml
+    # - vars/vars_ontap_sandbox.yml
     # - vars/vars_ontap_testTap.yml
     # - vars/vars_ontap_primary.yml
     # - vars/vars_ontap_secondary.yml
@@ -104,4 +104,3 @@
         shelf3_disk_count:    14  # No Default
         shelf3_disk_size:     4000
         shelf3_disk_type:     31
-
