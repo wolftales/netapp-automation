@@ -26,3 +26,11 @@ network interface modify -vserver sandbox -lif sandbox-02_mgmt1 -home-port e0c
 network interface migrate -vserver sandbox -lif sandbox-02_mgmt1 -destination-node sandbox-02 -destination-port e0c
 
 ```
+## Snapshot both VMs
+
+```shell
+ONTAP <Version>
+Fresh Install - 2 Nodes
+Node 2 joined, BD Clean-up
+No Advanced Config
+```

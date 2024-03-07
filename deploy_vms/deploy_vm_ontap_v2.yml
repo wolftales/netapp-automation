@@ -23,7 +23,7 @@
     # ovf_file:           files/ONTAP/vsim-netapp-DOT9.10.1-cm_nodar.ova
     # ovf_file:           ../files/ONTAP/vsim-netapp-DOT9.11.1RC1-cm.ova
     ovf_file:           "../files/ONTAP/vsim-netapp-DOT{{ ovf_version }}-cm_nodar.ova"
-    ovf_version:        "9.13.1"
+    ovf_version:        "9.14.1"
 
     vcenter_address:    vcenter.demo.lab
     vcenter_username:   administrator@vsphere.local
@@ -33,9 +33,9 @@
   vars_files:
     - vars/vars_vcenter_exampleLab.yml
     # - vars/vars_ontap_ontap-cl01.yml
-    # - vars/vars_ontap_sandbox.yml
+    - vars/vars_ontap_sandbox.yml
     # - vars/vars_ontap_testTap.yml
-    - vars/vars_ontap_primary.yml
+    # - vars/vars_ontap_primary.yml
     # - vars/vars_ontap_secondary.yml
     # - vars/vars_ontap_redshirt.yml
 
