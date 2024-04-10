@@ -1,0 +1,99 @@
+---
+- hosts: localhost
+  name: "ONTAP Cluster Config: {{ cluster_name }}"
+  gather_facts: false
+  vars:
+    cluster_name: ontap-cl01
+    netapp_hostname: 192.168.7.180
+    netapp_username: admin
+    netapp_password: netapp1234
+    state: present
+    vserver: hwe-elab-example01
+    volume:
+      name: fg_name_04
+      auto: false
+      aggr_list:
+      - aggr1_n01
+      - aggr1_n02
+      aggr_list_multiplier: 2
+      protocol: nfs
+      security_style: unix
+      size: 2
+      size_unit: tb
+      quota:
+        disk: 1
+      export_policy: default
+      tiering_policy: auto
+
+    login: &login
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+  # vars_prompt:  # For NetApp Admin Credentials
+  #   - name: netapp_username
+  #     prompt: NetApp 'admin'
+  #   - name: netapp_password
+  #     prompt: NetApp 'admin' password
+  #     secret: true
+  # vars_files:
+  #   - vars/vars_ontap_config_redshirt.yml
+
+  collections:
+    - netapp.ontap
+
+  tasks:
+    ###
+    # Provision Flexgroup: Manual Provision
+    ###
+
+    - name: Create Flexgroup Volume Manual Provsion
+      netapp.ontap.na_ontap_volume:
+        state:            "{{ state }}"
+        vserver:          "{{ vserver }}"
+        <<: *login
+
+        name:             "{{ volume['name'] }}"
+
+        # auto_provision_as: flexgroup
+        size:             "{{ volume['size']      | int / 0.95 }}"
+        size_unit:        "{{ volume['size_unit'] | default('tb') }}"
+        # flexgroup manual provision
+        aggr_list:        "{{ volume['aggr_list'] }}"
+        aggr_list_multiplier: "{{ volume['aggr_list_multiplier'] }}"
+
+        space_guarantee:  none
+        language:         utf8mb4
+        volume_security_style:   "{{ volume['security_style'] }}"
+        snapshot_policy:  "{{ volume['snapshot_policy'] | default('default') }}"
+        export_policy:    "{{ volume['export_policy']   | default('default') }}"
+        tiering_policy:   "{{ volume['tiering_policy']  | default('none') }}"
+      when: volume['auto'] == false
+
+    ###
+    # Provision Flexgroup: Auto Provision
+    ###
+
+    - name: Create Flexgroup volume Auto Provsion
+      netapp.ontap.na_ontap_volume:
+        state:            "{{ state }}"
+        vserver:          "{{ vserver }}"
+        <<: *login
+
+        name:             "{{ volume['name'] }}"
+
+        auto_provision_as: flexgroup
+        size:             "{{ fg_size | int }}"
+        size_unit:        "{{ volume['size_unit'] | default('tb') }}"
+        # flexgroup manual provision - ignored when auto_provision_as: flexgroup
+        # aggr_list:        "{{ volume['aggr_list'] }}"
+        # aggr_list_multiplier: "{{ volume['aggr_list_multiplier'] }}"
+
+        space_guarantee:  none
+        language:         utf8mb4
+        volume_security_style:   "{{ volume['security_style'] }}"
+        snapshot_policy:  "{{ volume['snapshot_policy'] | default('default') }}"
+        export_policy:    "{{ volume['export_policy']   | default('default') }}"
+        tiering_policy:   "{{ volume['tiering_policy']  | default('none') }}"
+      when: volume['auto'] == true
