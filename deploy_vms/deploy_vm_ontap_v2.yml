@@ -32,8 +32,8 @@
     vm_datastore:       "datastore1"
   vars_files:
     - vars/vars_vcenter_exampleLab.yml
-    # - vars/vars_ontap_ontap-cl01.yml
-    - vars/vars_ontap_sandbox.yml
+    - vars/vars_ontap_ontap-cl01.yml
+    # - vars/vars_ontap_sandbox.yml
     # - vars/vars_ontap_testTap.yml
     # - vars/vars_ontap_primary.yml
     # - vars/vars_ontap_secondary.yml
@@ -42,7 +42,7 @@
   tasks:
 
     - name: Deploy VSIM Second node - node-02
-      include_role:
+      ansible.builtin.include_role:
         name: deploy_ovf_vsim
       vars:
         vm_name:              "{{ clus.name }}-02"
@@ -75,7 +75,7 @@
       when: clus.node2 is defined
 
     - name: Initial cluster & node-01
-      include_role:
+      ansible.builtin.include_role:
         name: deploy_ovf_vsim
       vars:
         vm_name:              "{{ clus.name }}-01"
