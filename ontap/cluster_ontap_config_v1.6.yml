@@ -56,12 +56,13 @@
   vars_files:
     # - vars/vars_ontap_ontap-cl01.yml
     # - vars/vars_ontap_redshirt.yml
-    - vars/vars_ontap_sandbox.yml
+    # - vars/vars_ontap_sandbox.yml
     # - vars/vars_ontap_testTap.yml
-    # - vars/vars_ontap_config_vsim_single.yml
-    # - vars/vars_ontap_config_role_single.yml
-    - vars/vars_ontap_config_vsim_HA.yml
-    - vars/vars_ontap_config_role_HA.yml
+    - vars/vars_ontap_primary.yml
+    - vars/vars_ontap_config_vsim_single.yml
+    - vars/vars_ontap_config_role_single.yml
+    # - vars/vars_ontap_config_vsim_HA.yml
+    # - vars/vars_ontap_config_role_HA.yml
     - vars/vars_vsim_licenses.yml
 
   collections:
@@ -72,17 +73,17 @@
     # Network: Broadcast-domain split
     ###
 
-    # - name: Manage Active Ansible MGMT network interface
-    #   na_ontap_broadcast_domain:
-    #     state: present
-    #     <<: *login
-    #     from_name: "{{ item.old_bd | default('Default') }}"
-    #     name: "{{ item.new_bd }}"
-    #     mtu: "1500"
-    #     ipspace: Default
-    #     ports: "{{ item.ports }}"
-    #   loop: "{{ bcd.split_ports }}"
-    #   when: bcd.split_ports is defined and bcd.split_ports != None
+    - name: Manage Active Ansible MGMT network interface
+      na_ontap_broadcast_domain:
+        state: present
+        <<: *login
+        from_name: "{{ item.old_bd | default('Default') }}"
+        name: "{{ item.new_bd }}"
+        mtu: "1500"
+        ipspace: Default
+        ports: "{{ item.ports }}"
+      loop: "{{ bcd.split_ports }}"
+      when: bcd.split_ports is defined and bcd.split_ports != None
 
     ###
     # Role-Based Configuration
