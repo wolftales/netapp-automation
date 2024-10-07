@@ -34,9 +34,9 @@
   vars_files:
     - vars/vars_vcenter_exampleLab.yml
     # - vars/vars_ontap_ontap-cl01.yml
-    # - vars/vars_ontap_sandbox.yml
+    - vars/vars_ontap_sandbox.yml
     # - vars/vars_ontap_testTap.yml
-    - vars/vars_ontap_primary.yml
+    # - vars/vars_ontap_primary.yml
     # - vars/vars_ontap_secondary.yml
     # - vars/vars_ontap_redshirt.yml
 
@@ -60,7 +60,7 @@
         # ontap_password:       netapp1234
         force:                true  # Overwrite if exists - Repave
         data_network:         "VM Network"
-        cluster_network:      "GRID Network"
+        # cluster_network:      "GRID Network"
         shelf0_disk_count:    14  # Default is - Type: 31 Size: 4000
         shelf0_disk_size:     4000
         shelf0_disk_type:     31
