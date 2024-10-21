@@ -2,10 +2,6 @@
 # Varibles to setup policies
 ###
 ---
-netapp_https: true
-netapp_validate_certs: false
-
-
 qos_policies:
   # - { name: scratch, vserver: "{{ vserver }}", max: '800KB/s,800iops', min: '100iops' }
   # - { name: safe, vserver: "{{ vserver }}", max: '80KB/s,80iops', min: '10iops' }
@@ -20,6 +16,6 @@ export_policies:
   - { name: Database_0001, vserver: "{{ vserver }}" }
 
 snap_policies:
-  - { name: scratch, sched: hourly, prefix: , count: 10 , enabled: true }
-  - { name: safe, sched: daily, prefix: , count: 20 , enabled: true }
+  - { name: scratch, sched: hourly, prefix: hourly, count: 10 , enabled: true }
+  - { name: safe, sched: daily, prefix: daily, count: 20 , enabled: true }
   - { name: global, sched: monthly, prefix: global, count: 4, enabled: true }

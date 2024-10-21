@@ -1,0 +1,173 @@
+# Requires Ansible 2.12+ for module_defaults
+---
+- hosts: localhost
+  gather_facts: false
+  name: ONTAP - Provision NFS exports
+  collections:
+    - netapp.ontap
+  module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: auto
+  # Precedence: Play vars_files <- Play vars_prompt <- Play vars
+  vars_files:
+    - vars_policies.yml
+    - vars_quotas.yml
+    - vars_qtrees.yml
+  # vars_prompt:
+  #   - name: "netapp_password"
+  #     prompt: "Enter the NetApp Admin Password"
+  #     private: true
+  #     confirm: true
+  vars:
+    netapp_hostname:  192.168.7.200
+    netapp_username:  admin
+    netapp_password:  netapp1234
+    state:            present
+    vserver:          ontap-vs01
+    cluster:          sandbox
+
+    aggrs: 
+    - { name: "{{ cluster }}_01_aggr1", node: "{{ cluster }}-01", disk_count: 24, max_raid: 24 }
+    # - { name: "{{ cluster }}_01_aggr2", node: "{{ cluster }}-02", disk_count: 24, max_raid: 24 }
+    - { name: "{{ cluster }}_02_aggr1", node: "{{ cluster }}-01", disk_count: 24, max_raid: 24 }
+    # - { name: "{{ cluster }}_02_aggr2", node: "{{ cluster }}-02", disk_count: 24, max_raid: 24 }
+
+    fg:
+      name:       vol01
+      size:       600
+      size_unit:  gb
+
+  tasks:
+
+  ###
+  # Flexgroup: Autoprovision
+  ###
+
+  # - name: Create 2 data aggregates per node for flexgroup
+  #   netapp.ontap.na_ontap_aggregate:
+  #     state:          "{{ state }}"
+  #     name:           "{{ item.name | replace('-','_') }}"
+  #     nodes:          "{{ item.node }}"
+  #     disk_count:     "{{ item.disk_count }}"
+  #     raid_size:      "{{ item.max_raid }}"
+  #     is_mirrored:    "{{ item.mirror | default('false') }}"
+  #     snaplock_type:  "{{ item.snaplock | default('non_snaplock') }}"
+  #     use_rest:       "{{ item.use_rest | default('always') }}"
+  #     service_state:  online
+  #     wait_for_online:  True
+  #     time_out:         300
+  #   with_items:
+  #     "{{ aggrs }}"
+  #   when: aggrs != None
+
+
+  - name: Create Flexgroup volume auto provsion as flex group
+    netapp.ontap.na_ontap_volume:
+      state:             "{{ state }}"
+
+      name:              "{{ fg.name }}"
+
+      auto_provision_as: flexgroup
+      size:              "{{ fg.size }}"
+      size_unit:         "{{ fg.size_unit }}"
+
+      unix_permissions:   777
+      snapshot_policy:    default
+      export_policy:      default
+
+      space_guarantee:   none
+      # space_slo:         none
+      vserver:           "{{ vserver }}"
+  
+
+
+  # Creating policy dependancies for the volume creation process
+  - name: create qos policy group
+    na_ontap_qos_policy_group:
+      state: "{{ state }}"
+
+      name: "{{ item.name }}"
+      vserver: "{{ item.vserver }}"
+      max_throughput: "{{ item.max | default(omit) }}"
+      min_throughput: "{{ item.min | default(omit) }}"
+
+    loop: "{{ qos_policies }}"
+
+  - name: Create Export Policy
+    na_ontap_export_policy:
+      state: "{{ state }}"
+
+      name: "{{ item.name }}"
+      vserver: "{{ item.vserver }}"
+
+    loop: "{{ export_policies }}"
+
+  - name: Create Snapshot policy
+    na_ontap_snapshot_policy:
+      state: "{{ state }}"
+
+      name: "{{ item.name }}"
+      schedule: "{{ item.sched }}"
+      prefix: "{{ item.prefix | default(omit) }}"
+      count: "{{ item.count }}"
+      enabled: "{{ item.enabled }}"
+
+    loop: "{{ snap_policies }}"
+
+  # Quota Policy create - This should be part of a standard policy configuration in the future
+  - name: 'Create "Default" quota policy for new volumes based on the  {{ type }} template'
+    na_ontap_quota_policy:
+      state:      "{{ state }}"
+
+      vserver:    "{{ vserver }}"
+      name:       "default"
+
+  # Manage quotas - user
+  - name: 'Add/Set user quota rule(s) for type & target in REST.'
+    netapp.ontap.na_ontap_quotas:
+      state:                "{{ state }}"
+      vserver:              "{{ vserver }}"
+
+      volume:               "{{ item.volume_target }}"
+      policy:               "{{ item.quota_policy_name }}"
+      quota_target:         "{{ item.quota_target }}"  # user, group, tree: Only used for ZAPI, REST uses active policy on target
+      qtree:                "{{ item.qtree_target | default(omit) }}"
+      type:                 "{{ item.quota_type }}"
+      activate_quota_on_change: "{{ item.activate_quota_on_change }}"
+      perform_user_mapping:     "{{ item.perform_user_mapping | default(omit) }}"
+      threshold:            "{{ item.threshold | default(omit) }}"
+      soft_disk_limit:      "{{ item.soft_disk_limit }}"
+      soft_file_limit:      "{{ item.soft_file_limit }}"
+      file_limit:           "{{ item.file_limit }}"
+      disk_limit:           "{{ item.disk_limit }}"
+      set_quota_status:     "{{ item.set_quota_status }}"
+    
+    loop: "{{ quota_list }}" 
+    when: state == 'present' and quota_type == 'user'
+
+  # Manage quotas - disk
+  - name: 'Add/Set group / tree quota rule(s) for type & target in REST.'
+    netapp.ontap.na_ontap_quotas:
+      state:                "{{ state }}"
+      vserver:              "{{ vserver }}"
+      
+      volume:               "{{ item.volume_target }}"
+      policy:               "{{ item.quota_policy_name }}"
+      quota_target:         "{{ item.quota_target }}"  # user, group, tree: Only used for ZAPI, REST uses active policy on target
+      qtree:                "{{ item.qtree_target | default(omit) }}"
+      type:                 "{{ item.quota_type }}"
+      activate_quota_on_change: "{{ item.activate_quota_on_change }}"
+      threshold:            "{{ item.threshold | default(omit) }}"
+      soft_disk_limit:      "{{ item.soft_disk_limit }}"
+      soft_file_limit:      "{{ item.soft_file_limit }}"
+      file_limit:           "{{ item.file_limit }}"
+      disk_limit:           "{{ item.disk_limit }}"
+      set_quota_status:     "{{ item.set_quota_status }}"
+    
+    loop: "{{ quota_list }}" 
+    when: state == 'present' and quota_type != 'user'  

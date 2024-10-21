@@ -6,7 +6,7 @@
     - community.vmware
 
   vars:
-    ovf_version:        "9.11.1"
+    ovf_version:        "9.14"
     ovf_file:           "../files/AIQUM/ActiveIQUnifiedManager-{{ ovf_version }}.ova"
     vcenter_address:    vcenter.demo.lab
     vcenter_username:   administrator@vsphere.local

@@ -1,0 +1,27 @@
+flexvol_name:     vol01
+name:             group1
+from_name:        qtree1
+export_policy:    default
+security_style:   unix
+oplocks:          disabled
+unix_permissions: 0777
+unix_user:        unix_user1
+unix_group:       group1
+
+qtree_list:
+- { flexvol_name: "{{ flexvol_name }}", name: proj1, export_policy: default,
+    security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+    unix_permissions: "{{ unix_permissions }}", unix_user: "{{ unix_user }}",
+    unix_group:   "{{ unix_group }}" }
+- { flexvol_name: "{{ flexvol_name }}", name: proj2, export_policy: data,
+    security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+    unix_permissions: "{{ unix_permissions }}", unix_user: proj2,
+    unix_group:   unix_group2 }
+- { flexvol_name: "{{ flexvol_name }}", name: proj3, export_policy: data,
+    security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+    unix_permissions: "{{ unix_permissions }}", unix_user: proj3,
+    unix_group:   unix_group3 }
+- { flexvol_name: "{{ flexvol_name }}", name: proj4, export_policy: data,
+    security_style: "{{ security_style }}", oplocks: "{{ oplocks }}",
+    unix_permissions: "{{ unix_permissions }}", unix_user: proj4,
+    unix_group:   unix_group4 }

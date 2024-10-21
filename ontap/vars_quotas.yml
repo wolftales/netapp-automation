@@ -1,0 +1,67 @@
+quota_policy_name:     default    # Target for ZAPI, REST operates on active policy
+volume_target:         vol01      # Required 
+set_quota_status:      true       # false, true - on or off
+quota_target:          ""         # for default user & group quota rules use ""
+quota_type:            group      # user, group, tree
+qtree_target:          ""         # for tree type quota this field is ""
+activate_quota_on_change: resize  # resize,reinitialize,none
+perform_user_mapping:  true       # false, true - only on user quotas
+threshold:             ""         # Only available in ZAPI
+soft_disk_limit:       '-'        # '-' for monitoring, KB is used by default
+soft_file_limit:       '-'
+file_limit:            '-'
+disk_limit:            '-'
+
+quota_list:
+    - { volume_target:      "{{ volume_target }}",
+        qtree_target:       "{{ qtree_target }}",
+        quota_policy_name:  "{{ quota_policy_name }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        quota_target:       "{{ quota_target }}",
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+    - { quota_policy_name:  "{{ quota_policy_name }}",
+        volume_target:      "{{ volume_target }}",
+        qtree_target:       proj2,
+        quota_target:       unix_group2,
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+    - { quota_policy_name:  "{{ quota_policy_name }}",
+        volume_target:      "{{ volume_target }}",
+        qtree_target:       proj3,
+        quota_target:       unix_group3,
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
+    - { quota_policy_name:  "{{ quota_policy_name }}",
+        volume_target:      "{{ volume_target }}",
+        qtree_target:       proj4,
+        quota_target:       unix_group4,
+        quota_type:         "{{ quota_type }}",
+        threshold:          "{{ threshold }}",
+        soft_disk_limit:    "{{ soft_disk_limit }}",
+        disk_limit:         "{{ disk_limit }}",
+        soft_file_limit:    "{{ soft_file_limit }}",
+        file_limit:         "{{ file_limit }}",
+        set_quota_status:   "{{ set_quota_status }}",
+        activate_quota_on_change: "{{ activate_quota_on_change }}",
+        perform_user_mapping: "{{ perform_user_mapping }}" }
