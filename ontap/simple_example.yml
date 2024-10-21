@@ -4,6 +4,15 @@
   gather_facts: false
   collections:
     - netapp.ontap
+  
+  module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: auto
 
   # Varible precedence: vars < vars_prompts < vaars_files
   vars:

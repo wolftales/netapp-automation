@@ -1,3 +1,6 @@
+# Exclude List
+!add_ssh_publickey.yml
+
 # General ignore list
 # files/ONTAP/*
 # files/StorageGRID/*
