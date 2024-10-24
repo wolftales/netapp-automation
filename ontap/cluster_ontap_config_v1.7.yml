@@ -31,6 +31,14 @@
 - hosts: localhost
   name: "ONTAP Cluster Config: {{ clus.name }}"
   gather_facts: no
+  module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: auto
   vars:
     state: present
     login: &login
@@ -46,7 +54,7 @@
   #     prompt: NetApp 'admin' password
   #     private: true
   #     unsafe: false
-  # vars_prompt:  # For Doamin Admin Credentials for CIFS Server creation
+  #   # For Doamin Admin Credentials for CIFS Server creation
   #   - name: admin_username
   #     prompt: NetApp 'admin'
   #   - name: admin_password

@@ -1,0 +1,76 @@
+# Authentication Defaults
+netapp_hostname:  "{{ clus.net.mgmt }}"
+
+# Variables for ONTAP cluster setup & config
+cluster:        sandbox
+
+# Cluster and network services config
+clus:
+  name:           "{{ cluster }}"
+  loc:            VSIM                  # 'system snmp location'
+  
+  aggr:           
+    name:         "{{ cluster | replace('-','_') }}"  # Replaces - with _
+    raid: 
+      count:      24
+      size:       24
+
+  net:
+    mgmt:           192.168.7.200
+    netmask:        255.255.255.0
+    gateway:        192.168.7.1
+
+  # DNS Services Settings
+  dns:
+    domain:     example.local
+    srvrs:       192.168.7.3,192.168.7.1
+
+  # NTP Settings
+  time:
+    zone:       "US/Pacific"          #  <Area/Location Timezone> - Specified in the Olson format
+    srvr:       time.nist.gov
+
+# Node & SVM Network IP address Information
+node1:
+  mgmt_ip:      192.168.7.201
+  sp:
+    ip:         192.168.7.xx
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  icl: 
+    ip:         192.168.7.202
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  svm_lif1: 
+    ip:         192.168.7.205
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+node2:
+  mgmt_ip:      192.168.7.203
+  sp:
+    ip:         192.168.7.xx
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  icl: 
+    ip:         192.168.7.204
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  svm_lif1: 
+    ip:         192.168.7.206
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+
+# SVM Configuration Info
+vserver:          ontap-vs01
+
+# SVM Configuration Settings & Network IP address Information
+svm:
+  name:           "{{ vserver }}"
+  rootvol:        "{{ vserver | replace('-','_') }}"  # Replaces - with _
+  netmask:        "{{ clus.net.netmask }}"    # Replace with IP if not the same
+  gateway:        "{{ clus.net.gateway }}"    # Replace with IP if not the same
+  dns_domain:     "{{ clus.dns.domain | default('example.local') }}"  # Replace with IP if not the same as cluster
+  dns_srvrs:      "{{ clus.dns.srvrs | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
+  aggrs:          "{{ clus.aggr.name }}_01_aggr1,{{ clus.aggr.name }}_02_aggr1"
+  aggr_list:      '[  ]'
+  protocol:       nfs

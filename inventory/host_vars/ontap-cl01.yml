@@ -1,0 +1,121 @@
+###
+#  Ansible identity vars file for 'ontap-cl01'
+#  Advanced ONTAP configuration varible set
+#  Produces:
+#   - 2 vsims in cluster config (not HA)
+#   - leverages filters to work around '-''s in names
+###
+
+###
+# Authentification Defaults
+netapp_hostname:  "{{ clus.net.mgmt }}"
+
+###
+# Varibles for ONTAP cluster setup & config
+cluster:        ontap-cl01
+
+
+###
+# Cluster and network services config
+clus:
+  name:           "{{ cluster }}"
+  loc:            VSIM                  # 'system snmp location'
+  
+  aggr:           
+    name:         "{{ cluster | replace('-','_') }}"  # Replaces - with _
+    raid: 
+      count:      24
+      size:       24
+
+  net:
+    mgmt:           192.168.7.180
+    netmask:        255.255.255.0
+    gateway:        192.168.7.1
+
+  ###
+  # DNS Services Settings
+  # Note: 
+    dns:
+      domain:     example.local
+      srvrs:       192.168.7.3
+  ###
+  # NTP Settings
+    time:
+      zone:       "US/Pacific"          #  <Area/Location Timezone> - Specified in the Olson format
+    # zone:          'ETC/GMT'           #  <Area/Location Timezone> - Specified in the Olson format
+    # zone:          'GMT'               #  <Area/Location Timezone> - Specified in the Olson format
+    # zone:          'ETC/PST'           #  <Area/Location Timezone> - Specified in the Olson format
+      # srvr:           time.example.local
+      srvr:             time.nist.gov
+      # srvr:             time.apple.com
+      # srvr:             time.windows.com
+
+    ifgrp: 
+      name:         a0a         # IFGPR Interface name to be created
+      ports:        e0f         # Member interfaces to build IFGPR
+
+    vlans:
+      vlan_id:      42          # VLAN ID for fongiuring VLAN Tagging
+  
+
+###
+# Node & SVM Network IP address Information
+node1:
+  mgmt_ip:      192.168.7.181
+  sp:
+    ip:         192.168.7.xx
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  icl: 
+    ip:         192.168.7.182
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  svm_lif1: 
+    ip:         192.168.7.185
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+node2:
+  mgmt_ip:      192.168.7.183
+  sp:
+    ip:         192.168.7.xx
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  icl: 
+    ip:         192.168.7.184
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+  svm_lif1: 
+    ip:         192.168.7.186
+    netmask:      "{{ clus.net.netmask }}"
+    gateway:      "{{ clus.net.gateway }}"
+
+
+
+###
+# SVM Configuration Info
+vserver:          ontap-vs01
+
+
+###
+# SVM Configuration Settings & Network IP address Information
+svm:
+  name:           "{{ vserver }}"
+  rootvol:        "{{ vserver | replace('-','_') }}"  # Replaces - with _
+  netmask:        "{{ clus.net.netmask }}"    # Replace with IP if not the same
+  gateway:        "{{ clus.net.gateway }}"    # Replace with IP if not the same
+  dns_domain:     "{{ clus.net.dns.domain | default('example.local') }}"  # Replace with IP if not the same as cluster
+  dns_srvrs:      "{{ clus.net.dns.srvrs | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
+  aggrs:          "{{ clus.aggr.name }}_01_aggr1,{{ clus.aggr.name }}_02_aggr1"
+  aggr_list:      '[  ]'
+  protocol:       nfs
+  # export_policy:
+  # - name:  'Data'
+  #   client_match:
+  #   index:
+  #   ro_rule:
+  #   rw_rule:
+  #   super_user_security:
+
+
+
+

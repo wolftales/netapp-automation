@@ -3,9 +3,19 @@
   gather_facts: false
   collections:
     - netapp.ontap
+  
+  module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: auto
+  
   # Varible Precedence - files, prompt, vars
-  # vars_files:
-  # - vars_sample.yml
+  vars_files:
+  - vars/vars_export_policy_rules.yml
 
   vars_prompt:    # For NetApp Admin Credentials
     # - name: netapp_username
@@ -13,25 +23,14 @@
     - name:     "netapp_password"
       prompt:   "Enter the NetApp Admin Password"
       private:  yes
-      # secret:   true
+      # confirm:   yes
 
   vars:
     netapp_hostname:  192.168.7.180
     netapp_username:  admin 
-    # netapp_password:    # Disabled - Use var_prompt
+    netapp_password:    # Disabled - Use var_prompt
     state:            present
     vserver:          ontap-vs01
-  
-    export_policy_name: default
-    rule_index:       1
-    client_match:     0.0.0.0/0
-    ro_rule:          sys
-    rw_rule:          sys
-    super_user:       sys
-    protocol:         nfs
-    anonymous_uid:    65534
-    allow_suid:       true
-    ntfs_unix_security: ignore
 
     rule_list:
     - { export_policy_name: default, rule_index: 1, client_match: 192.168.7.125/32,
@@ -43,27 +42,12 @@
     - { export_policy_name: default, rule_index: 3, client_match: 0.0.0.0/0,
         ro_rule: sys, rw_rule:  none, super_user:  none, protocol: nfs,
         anonymous_uid: 65534, allow_suid: false, ntfs_unix_security: ignore }
-    - { export_policy_name: data, rule_index: 1, client_match: 192.168.7.0/24,
-        ro_rule: sys, rw_rule:  sys, super_user:  sys, protocol: nfs,
-        anonymous_uid: 65534, allow_suid: true, ntfs_unix_security: ignore }
-    - { export_policy_name: data, rule_index: 2, client_match: 0.0.0.0/0,
-        ro_rule: sys, rw_rule:  none, super_user:  none, protocol: nfs,
-        anonymous_uid: 65534, allow_suid: false, ntfs_unix_security: ignore }
-
-    # YAML Alias to simplify basic auth
-    login: &login
-        hostname:       "{{ netapp_hostname }}"
-        username:       "{{ netapp_username }}"
-        password:       "{{ netapp_password }}"
-        https:          true
-        validate_certs: false
 
   tasks:
 
   # Manage Export-policies - Create 'data' policy
   - name:   "Create SVM export_policy: {{ export_policy_name }}"
     netapp.ontap.na_ontap_export_policy:
-      <<: *login
       state:    "{{ state }}"
       vserver:  "{{ vserver }}"
 
@@ -75,7 +59,6 @@
   # Manage Export-policies - Add rules
   - name: "{{ Add if state == present else Remove }} rule for SVM Export-policy"
     netapp.ontap.na_ontap_export_policy_rule:
-      <<: *login
       state:                "{{ state }}"
       vserver:              "{{ vserver }}"
 
@@ -96,7 +79,6 @@
   # Manage Export-policies - Create 'data' policy
   - name: "{{ Create if state == present else Delete }} Data SVM Export-policy"
     netapp.ontap.na_ontap_export_policy:
-      <<: *login
       state:    "{{ state }}"
       vserver:  "{{ vserver }}"
 

@@ -5,5 +5,5 @@
             "file:///home/ken/Documents/git/netapp-automation/storagegrid/sg_tenant_bucket_mgmt.yml"
         ]
     },
-    "ansible.python.interpreterPath": "/bin/python"
+    "ansible.python.interpreterPath": "/opt/homebrew/bin/python3"
 }

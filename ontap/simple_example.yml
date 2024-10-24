@@ -18,16 +18,11 @@
   vars:
     netapp_hostname:  192.168.7.200
     netapp_username:  admin
-    login: &login
-      hostname: "{{ netapp_hostname }}"
-      username: "{{ netapp_username }}"
-      password: "{{ netapp_password }}"
-      https: true
-      validate_certs: false
   vars_prompt:
     - name: "netapp_password"
       prompt: "Enter the NetApp Admin Password"
       private: yes
+      confirm: yes
   # vars_files:
   #   - vars_files.yml
 
@@ -35,12 +30,6 @@
   - name: 'Connectivity Test & Display ONTAP_info: All'
     netapp.ontap.na_ontap_info:
       # state: info  # Deprecated
-      # YAML 
-      # hostname: "{{ netapp_hostname }}"
-      # username: "{{ netapp_username }}"
-      # password: "{{ netapp_password }}"
-      # https: true
-      # validate_certs: false
       gather_subset:  
       - all
         # - volume_info
@@ -48,7 +37,6 @@
         # - snapshot_policy_info
         # - ontap_system_version
         # - ontap_version
-      <<: *login
     register: ontap_info
 
   - name: Display Captured info
