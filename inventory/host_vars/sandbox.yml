@@ -1,64 +1,100 @@
 # Authentication Defaults
-netapp_hostname:  "{{ clus.net.mgmt }}"
+netapp_hostname:  "{{ cluster.net.mgmt }}"
 
 # Variables for ONTAP cluster setup & config
-cluster:        sandbox
+cluster_name:        sandbox
 
 # Cluster and network services config
-clus:
-  name:           "{{ cluster }}"
+cluster:
+  name:           "{{ cluster_name }}"
   loc:            VSIM                  # 'system snmp location'
-  
-  aggr:           
-    name:         "{{ cluster | replace('-','_') }}"  # Replaces - with _
-    raid: 
-      count:      24
-      size:       24
 
   net:
     mgmt:           192.168.7.200
     netmask:        255.255.255.0
     gateway:        192.168.7.1
 
-  # DNS Services Settings
-  dns:
-    domain:     example.local
-    srvrs:       192.168.7.3,192.168.7.1
+    # Node & SVM Network IP address Information
+    node1:
+      mgmt_ip:      192.168.7.201
+      sp:
+        ip:         192.168.7.xx
+        netmask:      "{{ cluster.net.netmask }}"
+        gateway:      "{{ cluster.net.gateway }}"
+      icl: 
+        ip:         192.168.7.202
+        netmask:      "{{ cluster.net.netmask }}"
+        gateway:      "{{ cluster.net.gateway }}"
+      svm_lif1: 
+        ip:         192.168.7.205
+        netmask:      "{{ cluster.net.netmask }}"
+        gateway:      "{{ cluster.net.gateway }}"
+    node2:
+      mgmt_ip:      192.168.7.203
+      sp:
+        ip:         192.168.7.xx
+        netmask:      "{{ cluster.net.netmask }}"
+        gateway:      "{{ cluster.net.gateway }}"
+      icl: 
+        ip:         192.168.7.204
+        netmask:      "{{ cluster.net.netmask }}"
+        gateway:      "{{ cluster.net.gateway }}"
+      svm_lif1: 
+        ip:         192.168.7.206
+        netmask:      "{{ cluster.net.netmask }}"
+        gateway:      "{{ cluster.net.gateway }}"
 
-  # NTP Settings
-  time:
-    zone:       "US/Pacific"          #  <Area/Location Timezone> - Specified in the Olson format
-    srvr:       time.nist.gov
+# Node Configuration Info
+location:       CPOC - 4746 RTP Way, NC
+contact:        "netapp-admins@demo.netapp.com"
+motd:
+  banner: |
+    ################ TEST BANNER ################      
+    # This system is currently in testing state #
+    #############################################
+  message: |
+    Welcome!
+    Please note: This system is not ready for production yet!
+timezone: America/Los_Angeles
+snmp:
+- community_name: public
+  access_control: ro
+snmp_traphosts:
+- 10.61.102.5
+aggrs:
+- { name: "{{ cluster_name }}_01_SSD_1", node: "{{ cluster_name }}-01", disk_count: 24, raid_size: 24, raid_type: raid_dp, is_mirrored: false }
+- { name: "{{ cluster_name }}_02_SSD_1", node: "{{ cluster_name }}-02", disk_count: 24, raid_size: 24, raid_type: raiddp, is_mirrored: false }
+inters:
+- { name: "{{ cluster_name }}-01_ic1", node: "{{ cluster_name }}-01", port: e0c, address: "{{ cluster.net.node1.icl.ip }}", netmask: "{{ cluster.net.node1.icl.netmask }}" }
+- { name: "{{ cluster_name }}-02_ic1", node: "{{ cluster_name }}-02", port: e0c, address: "{{ cluster.net.node2.icl.ip }}", netmask: "{{ cluster.net.node2.icl.netmask }}" }
 
-# Node & SVM Network IP address Information
-node1:
-  mgmt_ip:      192.168.7.201
-  sp:
-    ip:         192.168.7.xx
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  icl: 
-    ip:         192.168.7.202
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  svm_lif1: 
-    ip:         192.168.7.205
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-node2:
-  mgmt_ip:      192.168.7.203
-  sp:
-    ip:         192.168.7.xx
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  icl: 
-    ip:         192.168.7.204
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
-  svm_lif1: 
-    ip:         192.168.7.206
-    netmask:      "{{ clus.net.netmask }}"
-    gateway:      "{{ clus.net.gateway }}"
+vservers:
+- name: vs0
+  protocol:
+    - iscsi
+    - nfs
+    - nvme
+  lifs:
+  - { lif: data_nas_1,   service_policy: 'default-data-files', address: 192.168.7.203, node: "{{ cluster_name }}-01", port: e0d, netmask: 255.255.255.0 }
+  - { lif: data_iscsi_1, service_policy: 'default-data-iscsi', address: 192.168.7.204, node: "{{ cluster_name }}-01", port: e0d, netmask: 255.255.255.0 }
+  - { lif: data_nvme_1,  service_policy: 'default-data-nvme-tcp', address: 192.168.7.205, node: '{{ cluster_name }}-01', port: e0d, netmask: 255.255.255.0 }
+  routes:
+  - { destination: 0.0.0.0/0, gateway: 192.168.7.1, metric: 20}
+  nameservers:
+  - 192.168.7.3
+  domains:
+  - example.local
+  # cifs:
+  #   cifs_server_name: test20vs0
+  #   ou:
+  #   domain: lab.local
+  #   domain_tunnel: true
+  nfs:
+    nfsv3: enabled
+    nfsv4: enabled
+    nfsv41: disabled
+
+
 
 # SVM Configuration Info
 vserver:          ontap-vs01
@@ -67,10 +103,12 @@ vserver:          ontap-vs01
 svm:
   name:           "{{ vserver }}"
   rootvol:        "{{ vserver | replace('-','_') }}"  # Replaces - with _
-  netmask:        "{{ clus.net.netmask }}"    # Replace with IP if not the same
-  gateway:        "{{ clus.net.gateway }}"    # Replace with IP if not the same
-  dns_domain:     "{{ clus.dns.domain | default('example.local') }}"  # Replace with IP if not the same as cluster
-  dns_srvrs:      "{{ clus.dns.srvrs | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
-  aggrs:          "{{ clus.aggr.name }}_01_aggr1,{{ clus.aggr.name }}_02_aggr1"
+  netmask:        "{{ cluster.net.netmask }}"    # Replace with IP if not the same
+  gateway:        "{{ cluster.net.gateway }}"    # Replace with IP if not the same
+  dns_domain:     "{{ cluster.dns.domain | default('example.local') }}"  # Replace with IP if not the same as cluster
+  dns_srvrs:      "{{ cluster.dns.srvrs | default('192.168.7.3') }}"  # Replace with IP if not the same as cluster
+  aggrs:          "{{ cluster.aggr.name }}_01_aggr1,{{ cluster.aggr.name }}_02_aggr1"
   aggr_list:      '[  ]'
   protocol:       nfs
+
+  

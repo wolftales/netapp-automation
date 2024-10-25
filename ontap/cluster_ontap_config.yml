@@ -1,6 +1,16 @@
+#######################################################
+# 
+#   Author:     Ken Hillier
+#   Date:       24 Oct 24
+# 
+#   Description:  Playbook that configures ONTAP Select's cluster & SVM.
+# 
+#   Dependencies:  
+# 
+#######################################################
 ---
-- hosts: localhost
-  name: "ONTAP Cluster Config: {{ clus.name }}"
+- name: "ONTAP Cluster Config: {{ cluster_name }}"
+  hosts: sandbox
   gather_facts: no
   
   collections:
@@ -13,14 +23,14 @@
       password: "{{ netapp_password }}"
       https: true
       validate_certs: false
-      use_rest: auto
+      use_rest: always  # Use REST API for all tasks
   
   vars_files:
+    - vars/credentials.yml
+    - vars/vars_ontap_sandbox.yml
     # - vars/vars_ontap_ontap-cl01.yml
     # - vars/vars_ontap_redshirt.yml
-    - vars/vars_ontap_sandbox.yml
-    # - vars/vars_ontap_testTap.yml
-    # - vars/vars_ontap_primary.yml
+
   # vars_prompt:  # For NetApp Admin Credentials
   #   - name: netapp_username
   #     prompt: NetApp 'admin'
@@ -29,23 +39,23 @@
   #     private: true
   #     confirm: true
   #     unsafe: false
-  #   # For Doamin Admin Credentials for CIFS Server creation
+  #   # For Domain Admin Credentials for CIFS Server creation
   #   - name: admin_username
-  #     prompt: NetApp 'admin'
+  #     prompt: AD Domain admin account
+  #     default: "administrator"
+  #     private: false
   #   - name: admin_password
-  #     prompt: NetApp 'admin' password
+  #     prompt: AD Domain 'admin' password
   #     private: true
+  #     confirm: true
   #     unsafe: false
+
   vars:
     state: present
+    netapp_hostname: "{{ cluster.net.mgmt }}"
+
 
   tasks:
-
-    ###
-    # Role-Based Configuration
-    # Note: Based on collection(s)
-    #  - netapp.ontap 21.8.1
-    ###
 
     ###
     # Cluster Configuration
@@ -226,3 +236,52 @@
         <<: *login
       loop: "{{ export_policy_rules_list }}"
       when: export_policy_rules_list is defined and export_policy_rules_list != None
+
+
+
+
+
+
+  tasks:
+
+    # - name: Get ONTAP Facts (REST)
+    #   netapp.ontap.na_ontap_rest_info:
+    #     use_rest: always
+    #     gather_subset:
+    #       # - all
+    #       - demo
+    #   register: netapp
+
+    # - name: Print VAR
+    #   ansible.builtin.debug: var=netapp
+
+    - import_role:
+        name: ots_cluster_config
+
+    - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
+      ansible.builtin.debug:
+        msg:
+          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+          - "=                                                       ="
+          - "=              Netapp ONTAP Select                      ="
+          - "=          Configuration Complete for:                  ="
+          - "=                                                       ="
+          - "=          Cluster: {{ cluster_name }}"
+          - "=                                                       ="
+          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+
+    - import_role:
+        name: ots_svm_config
+
+    # - name: "Completed ONTAP Select SVM config: {{ name }}"
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+    #       - "=                                                       ="
+    #       - "=              Netapp ONTAP Select                      ="
+    #       - "=          Configuration Complete for:                  ="
+    #       - "=                                                       ="
+    #       - "=          SVM: {{ name }}"
+    #       - "=                                                       ="
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+

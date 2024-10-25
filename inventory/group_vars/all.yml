@@ -2,6 +2,6 @@
 
 # Authentication Defaults for all ONTAP clusters
 netapp_username:  admin
-netapp_password:  netapp1234      # Comment out or Remove to use vars_prompt, ENV or vault password
+# netapp_password:  netapp1234      # Comment out or Remove to use vars_prompt, ENV or vault password
 validate_certs:   false           # Set to bypass security error due to self-signed certs
 https:            true
