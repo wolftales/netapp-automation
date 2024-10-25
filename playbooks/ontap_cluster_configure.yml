@@ -1,7 +1,7 @@
 #######################################################
 # 
 #   Author:     Ken Hillier
-#   Date:       15 Sep 23
+#   Date:       24 Oct 24
 # 
 #   Description:  Playbook that configures ONTAP Select's cluster & SVM.
 # 
@@ -11,7 +11,7 @@
 ---
 - name: NetApp ONTAP Select Configuration
   hosts: sandbox
-  gather_facts: true  # Setting system time based on Ansible Control Host
+  gather_facts: false  # Setting system time based on Ansible Control Host
   collections:
     - netapp.ontap
   module_defaults:
@@ -34,7 +34,8 @@
   #     confirm: yes
   #     private: yes
   vars:
-    netapp_hostname: "{{ cluster_ip }}"
+    # netapp_hostname: "{{ cluster_ip }}"
+    netapp_hostname: "{{ cluster.net.mgmt }}"
     cluster_ip: "{{ cluster.net.mgmt }}"
 
   tasks:
