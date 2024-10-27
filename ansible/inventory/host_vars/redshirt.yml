@@ -1,0 +1,152 @@
+---
+###
+# Variables for ONTAP cluster setup & config
+cluster_name: redshirt
+cluster_netmask: 255.255.255.0
+cluster_gateway: 192.168.7.1
+
+# Cluster and network services config
+cluster:
+  name:     "{{ cluster_name }}"
+  loc:      "{{ location }}" # 'system snmp location'
+
+  net:
+    mgmt: 192.168.7.240
+    netmask: 255.255.255.0
+    gateway: 192.168.7.1
+
+    # Node & SVM Network IP address Information
+    node1:
+      mgmt_ip: 192.168.7.241
+      sp:
+        ip: 192.168.7.xx
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      icl: 
+        ip: 192.168.7.242
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      svm_lif1: 
+        ip: 192.168.7.245
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      svm_lif2:
+        ip: 192.168.7.247
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+    node2:
+      mgmt_ip: 192.168.7.243
+      sp:
+        ip: 192.168.7.xx
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      icl: 
+        ip: 192.168.7.244
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      svm_lif1: 
+        ip: 192.168.7.246
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      svm_lif2:
+        ip: 192.168.7.248
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+
+# Node Configuration Info
+location: ExampleLab - 1234 Example St, Seattle, WA 12345
+contact: "netapp-admins@example.local"
+motd:
+  banner: |
+    ################ TEST BANNER ################
+    # This system is currently in testing state #
+    #############################################
+  message: |
+    Welcome!
+    Please note: This system is not ready for production yet!
+timezone: America/Los_Angeles
+snmp:
+  - community_name: public
+    access_control: ro
+snmp_traphosts:
+  - 10.61.102.5
+aggrs:
+  - {
+    name: "{{ cluster_name }}_01_SSD_1",
+    node: "{{ cluster_name }}-01",
+    disk_count: 24,
+    raid_size: 24,
+    raid_type: raid_dp,
+    is_mirrored: false,
+  }
+  - {
+    name: "{{ cluster_name }}_02_SSD_1",
+    node: "{{ cluster_name }}-02",
+    disk_count: 24,
+    raid_size: 24,
+    raid_type: raid_dp,
+    is_mirrored: false,
+  }
+inters:
+  - {
+    name: "{{ cluster_name }}-01_ic1",
+    node: "{{ cluster_name }}-01",
+    port: e0c,
+    address: "{{ cluster.net.node1.icl.ip }}",
+    netmask: "{{ cluster.net.node1.icl.netmask }}",
+  }
+  - {
+    name: "{{ cluster_name }}-02_ic1",
+    node: "{{ cluster_name }}-02",
+    port: e0c,
+    address: "{{ cluster.net.node2.icl.ip }}",
+    netmask: "{{ cluster.net.node2.icl.netmask }}",
+  }
+
+# Vserver configuration
+vservers:
+  - name: vs0
+    protocol:
+      - iscsi
+      - nfs
+      - nvme
+    lifs:
+      - {
+        lif: data_nas_1,
+        service_policy: "default-data-files",
+        address: "{{ cluster.net.node1.svm_lif1.ip }}",
+        node: "{{ cluster_name }}-01",
+        port: e0d,
+        netmask: "{{ cluster.net.node1.svm_lif1.netmask }}",
+      }
+      - {
+        lif: data_iscsi_1,
+        service_policy: "default-data-iscsi",
+        address: "{{ cluster.net.node2.svm_lif1.ip }}",
+        node: "{{ cluster_name }}-02",
+        port: e0d,
+        netmask: "{{ cluster.net.node2.svm_lif1.netmask }}",
+      }
+      - {
+        lif: data_nvme_1,
+        service_policy: "default-data-nvme-tcp",
+        address: "{{ cluster.net.node1.svm_lif2.ip }}",
+        node: "{{ cluster_name }}-01",
+        port: e0d,
+        netmask: "{{ cluster.net.node1.svm_lif1.netmask }}",
+      }
+    routes:
+      - { destination: 0.0.0.0/0, gateway: 192.168.7.1, metric: 20 }
+    nameservers:
+      - 192.168.7.3
+    domains:
+      - example.local
+    # cifs:
+    #   cifs_server_name: vs01
+    #   ou:
+    #   domain: example.local
+    #   domain_tunnel: true
+    nfs:
+      nfsv3: enabled
+      nfsv4: enabled
+      nfsv41: disabled

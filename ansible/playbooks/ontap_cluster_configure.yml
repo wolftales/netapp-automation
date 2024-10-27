@@ -1,16 +1,16 @@
 #######################################################
-# 
+#
 #   Author:     Ken Hillier
 #   Date:       24 Oct 24
-# 
+#
 #   Description:  Playbook that configures ONTAP Select's cluster & SVM.
-# 
-#   Dependencies:  
-# 
+#
+#   Dependencies:
+#
 #######################################################
 ---
 - name: NetApp ONTAP Select Configuration
-  hosts: sandbox
+  hosts: ontap
   gather_facts: false  # Setting system time based on Ansible Control Host
   collections:
     - netapp.ontap
@@ -23,7 +23,7 @@
       validate_certs: false
       use_rest: always
   # vars_files:
-  #   - ../vars/credentials.yml
+  #   - ../inventory/group_vars/vault.yml
   # vars_prompt:
   #   - name: admin_username
   #     prompt: AD Domain admin account
@@ -35,43 +35,46 @@
   #     private: yes
   vars:
     # netapp_hostname: "{{ cluster_ip }}"
-    netapp_hostname: "{{ cluster.net.mgmt }}"
-    cluster_ip: "{{ cluster.net.mgmt }}"
+    # netapp_hostname: "{{ cluster.net.mgmt }}"
+    # cluster_ip: "{{ cluster.net.mgmt }}"
 
   tasks:
 
-    # - name: Get ONTAP Facts (REST)
-    #   netapp.ontap.na_ontap_rest_info:
-    #     use_rest: always
-    #     gather_subset:
-    #       # - all
-    #       - demo
-    #   register: netapp
-    # - name: Get Ontap Facts (ZAPI)
-    #   na_ontap_info:
-    #     state: info
-    #   register: netapp
+    - name: Get ONTAP Facts (REST)
+      netapp.ontap.na_ontap_rest_info:
+        gather_subset:
+          # - all
+          - demo
+      register: netapp
 
-    # - name: Print VAR
-    #   ansible.builtin.debug: var=netapp
+    - name: Print VAR
+      ansible.builtin.debug: var=netapp
 
-    - import_role:
-        name: na_ontap_cluster_config_v4
-
-    - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
+    - name: "Print netapp_hostname via cluster.net.mgmt lookup"
       ansible.builtin.debug:
         msg:
-          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-          - "=                                                       ="
-          - "=              Netapp ONTAP Select                      ="
-          - "=          Configuration Complete for:                  ="
-          - "=                                                       ="
-          - "=          Cluster: {{ cluster_name }}"
-          - "=                                                       ="
-          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+          - "netapp_hostname is {{ inventory_hostname }}"
+          - "netapp_hostname is {{ netapp_hostname | default('<|HOSTNAME UNDEFINED|>') }}"
+          - "netapp_username is {{ netapp_username | default('<|USERNAME UNDEFINED|>')  }}"
+          - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
 
-    - import_role:
-        name: na_ontap_vserver_create_v3
+    # - import_role:
+    #     name: na_ontap_cluster_config_v4
+
+    # - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+    #       - "=                                                       ="
+    #       - "=              Netapp ONTAP Select                      ="
+    #       - "=          Configuration Complete for:                  ="
+    #       - "=                                                       ="
+    #       - "=          Cluster: {{ cluster_name }}"
+    #       - "=                                                       ="
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+
+    # - import_role:
+    #     name: na_ontap_vserver_create_v3
 
     # - name: "Completed ONTAP Select SVM config: {{ name }}"
     #   ansible.builtin.debug:
@@ -84,4 +87,3 @@
     #       - "=          SVM: {{ name }}"
     #       - "=                                                       ="
     #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-

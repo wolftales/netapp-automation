@@ -1,6 +1,8 @@
 # Ansible Connection
 ansible_connection: local
 
+netapp_hostname: "{{ cluster.net.mgmt }}"
+
 # Time Settings
 time:
   servers:  # Common NTP Settings for all ONTAP clusters

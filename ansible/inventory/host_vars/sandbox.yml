@@ -8,8 +8,8 @@ cluster_gateway: 192.168.7.1
 ###
 # Cluster and network services config
 cluster:
-  name: "{{ cluster_name }}"
-  loc: "{{ location }}" # 'system snmp location'
+  name:     "{{ cluster_name }}"
+  loc:      "{{ location }}" # 'system snmp location'
 
   net:
     mgmt: 192.168.7.200
@@ -31,6 +31,10 @@ cluster:
         ip: 192.168.7.205
         netmask: "{{ cluster_netmask }}"
         gateway: "{{ cluster_gateway }}"
+      svm_lif2:
+        ip: 192.168.7.207
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
     node2:
       mgmt_ip: 192.168.7.203
       sp:
@@ -43,6 +47,10 @@ cluster:
         gateway: "{{ cluster_gateway }}"
       svm_lif1:
         ip: 192.168.7.206
+        netmask: "{{ cluster_netmask }}"
+        gateway: "{{ cluster_gateway }}"
+      svm_lif2:
+        ip: 192.168.7.208
         netmask: "{{ cluster_netmask }}"
         gateway: "{{ cluster_gateway }}"
 
@@ -96,6 +104,7 @@ inters:
     netmask: "{{ cluster.net.node2.icl.netmask }}",
   }
 
+# Vserver configuration
 vservers:
   - name: vs0
     protocol:
@@ -106,26 +115,26 @@ vservers:
       - {
         lif: data_nas_1,
         service_policy: "default-data-files",
-        address: 192.168.7.203,
+        address: "{{ cluster.net.node1.svm_lif1.ip }}",
         node: "{{ cluster_name }}-01",
         port: e0d,
-        netmask: 255.255.255.0,
+        netmask: "{{ cluster.net.node1.svm_lif1.netmask }}",
       }
       - {
         lif: data_iscsi_1,
         service_policy: "default-data-iscsi",
-        address: 192.168.7.204,
-        node: "{{ cluster_name }}-01",
+        address: "{{ cluster.net.node2.svm_lif1.ip }}",
+        node: "{{ cluster_name }}-02",
         port: e0d,
-        netmask: 255.255.255.0,
+        netmask: "{{ cluster.net.node2.svm_lif1.netmask }}",
       }
       - {
         lif: data_nvme_1,
         service_policy: "default-data-nvme-tcp",
-        address: 192.168.7.205,
+        address: "{{ cluster.net.node1.svm_lif2.ip }}",
         node: "{{ cluster_name }}-01",
         port: e0d,
-        netmask: 255.255.255.0,
+        netmask: "{{ cluster.net.node1.svm_lif1.netmask }}",
       }
     routes:
       - { destination: 0.0.0.0/0, gateway: 192.168.7.1, metric: 20 }
@@ -134,26 +143,11 @@ vservers:
     domains:
       - example.local
     # cifs:
-    #   cifs_server_name: test20vs0
+    #   cifs_server_name: vs01
     #   ou:
-    #   domain: lab.local
+    #   domain: example.local
     #   domain_tunnel: true
     nfs:
       nfsv3: enabled
       nfsv4: enabled
       nfsv41: disabled
-
-# SVM Configuration Info
-vserver: ontap-vs01
-
-# SVM Configuration Settings & Network IP address Information
-svm:
-  name: "{{ vserver }}"
-  rootvol: "{{ vserver | replace('-','_') }}"
-  netmask: "{{ cluster_netmask }}"
-  gateway: "{{ cluster_gateway }}"
-  dns_domain: "{{ cluster.dns.domain | default('example.local') }}"
-  dns_srvrs: "{{ cluster.dns.srvrs | default('192.168.7.3') }}"
-  aggrs: "{{ cluster.aggr.name }}_01_aggr1,{{ cluster.aggr.name }}_02_aggr1"
-  aggr_list: "[  ]"
-  protocol: nfs

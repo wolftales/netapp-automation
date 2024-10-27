@@ -9,18 +9,18 @@
 #     # delay:    60
 #     delay:    6
 # tasks file for na-ontap-cluster-config
-- name: Get Ansible Server Time Info
-  set_fact:  
-    dd:       '{{ ansible_date_time.day }}'
-    mm:       '{{ ansible_date_time.month }}'
-    yyyy:     '{{ ansible_date_time.year }}'
-    hr:       '{{ ansible_date_time.hour }}'
-    mn:       '{{ ansible_date_time.minute }}'
-    ss:       '{{ ansible_date_time.second }}'
-    tz:       '{{ ansible_date_time.tz }}'
-- name: Sync CDOT to Ansible Server Time
-  na_ontap_command:
-    command: ['cluster date modify -dateandtime {{ yyyy }}{{ mm }}{{ dd }}{{ hr }}{{ mn }} -timezone {{ tz }}']
+# - name: Get Ansible Server Time Info
+#   set_fact:  
+#     dd:       '{{ ansible_date_time.day }}'
+#     mm:       '{{ ansible_date_time.month }}'
+#     yyyy:     '{{ ansible_date_time.year }}'
+#     hr:       '{{ ansible_date_time.hour }}'
+#     mn:       '{{ ansible_date_time.minute }}'
+#     ss:       '{{ ansible_date_time.second }}'
+#     tz:       '{{ ansible_date_time.tz }}'
+# - name: Sync CDOT to Ansible Server Time
+#   na_ontap_command:
+#     command: ['cluster date modify -dateandtime {{ yyyy }}{{ mm }}{{ dd }}{{ hr }}{{ mn }} -timezone {{ tz }}']
 # # Can't get this rest_cli to implement the ZAPI above
 # - name: run ontap rest cli command
 #   netapp.ontap.na_ontap_rest_cli:

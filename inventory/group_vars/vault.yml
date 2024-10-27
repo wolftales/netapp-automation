@@ -1,1 +1,0 @@
-netapp_password:  netapp1234      # Comment out or Remove to use vars_prompt, ENV or vault password
