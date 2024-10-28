@@ -6,6 +6,13 @@
 #   Description:  Playbook that configures ONTAP Select's cluster & SVM.
 #
 #   Dependencies:
+#     - Ansible 2.9
+#     - NetApp ONTAP Collection
+#
+#   Notes - :
+#     - This playbook is designed to be run from the Ansible Control Host.
+#     - The playbook is designed to be run against a single NetApp ONTAP cluster.
+#     - NVMe license is required for NVMe configuration.
 #
 #######################################################
 ---
@@ -33,57 +40,55 @@
   #     prompt: AD Domain admin account password
   #     confirm: yes
   #     private: yes
-  vars:
-    # netapp_hostname: "{{ cluster_ip }}"
-    # netapp_hostname: "{{ cluster.net.mgmt }}"
-    # cluster_ip: "{{ cluster.net.mgmt }}"
+  # vars:
+  #   netapp_hostname: "{{ cluster.net.mgmt }}"
 
   tasks:
 
-    - name: Get ONTAP Facts (REST)
-      netapp.ontap.na_ontap_rest_info:
-        gather_subset:
-          # - all
-          - demo
-      register: netapp
+    # This section is used for testing initial connectivity or access 
+    # - name: Get ONTAP Facts (REST)
+    #   netapp.ontap.na_ontap_rest_info:
+    #     gather_subset:
+    #       - demo  # Replace with 'all' to gather all facts
+    #   register: netapp
 
-    - name: Print VAR
-      ansible.builtin.debug: var=netapp
+    # - name: Print VAR
+    #   ansible.builtin.debug: var=netapp
 
-    - name: "Print netapp_hostname via cluster.net.mgmt lookup"
+    # - name: "Print netapp_hostname via cluster.net.mgmt lookup"
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "netapp_hostname is {{ inventory_hostname }}"
+    #       - "netapp_hostname is {{ netapp_hostname | default('<|HOSTNAME UNDEFINED|>') }}"
+    #       - "netapp_username is {{ netapp_username | default('<|USERNAME UNDEFINED|>')  }}"
+    #       - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
+
+    - import_role:
+        name: na_ontap_cluster_config_v4
+
+    - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
       ansible.builtin.debug:
         msg:
-          - "netapp_hostname is {{ inventory_hostname }}"
-          - "netapp_hostname is {{ netapp_hostname | default('<|HOSTNAME UNDEFINED|>') }}"
-          - "netapp_username is {{ netapp_username | default('<|USERNAME UNDEFINED|>')  }}"
-          - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
+          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+          - "=                                                       ="
+          - "=              Netapp ONTAP Select                      ="
+          - "=          Configuration Complete for:                  ="
+          - "=                                                       ="
+          - "=          Cluster: {{ cluster_name }}"
+          - "=                                                       ="
+          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
 
-    # - import_role:
-    #     name: na_ontap_cluster_config_v4
+    - import_role:
+        name: na_ontap_vserver_create_v3
 
-    # - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
-    #   ansible.builtin.debug:
-    #     msg:
-    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-    #       - "=                                                       ="
-    #       - "=              Netapp ONTAP Select                      ="
-    #       - "=          Configuration Complete for:                  ="
-    #       - "=                                                       ="
-    #       - "=          Cluster: {{ cluster_name }}"
-    #       - "=                                                       ="
-    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-
-    # - import_role:
-    #     name: na_ontap_vserver_create_v3
-
-    # - name: "Completed ONTAP Select SVM config: {{ name }}"
-    #   ansible.builtin.debug:
-    #     msg:
-    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-    #       - "=                                                       ="
-    #       - "=              Netapp ONTAP Select                      ="
-    #       - "=          Configuration Complete for:                  ="
-    #       - "=                                                       ="
-    #       - "=          SVM: {{ name }}"
-    #       - "=                                                       ="
-    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+    - name: "Completed ONTAP VServer config: {{ cluster_name }}"
+      ansible.builtin.debug:
+        msg:
+          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+          - "=                                                       ="
+          - "=              Netapp ONTAP                             ="
+          - "=          Configuration Complete for:                  ="
+          - "=                                                       ="
+          - "=          VServer: {{ cluster_name }}"
+          - "=                                                       ="
+          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="

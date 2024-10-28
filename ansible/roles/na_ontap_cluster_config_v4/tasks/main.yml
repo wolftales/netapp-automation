@@ -121,8 +121,8 @@
     username:         "{{ netapp_username }}"
     password:         "{{ netapp_password }}"
     https:            "{{ https }}"
-    validate_certs:   "{{ validate_certs }}"
-    community_name:   "{{ item.community_name }}"
+    validate_certs:   "{{ validate_certs }}" 
+    snmp_username:    "{{ item.community_name }}"
     access_control:   "{{ item.access_control }}"
   with_items:
     "{{ snmp }}"

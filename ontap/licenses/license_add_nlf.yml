@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  name: ONTAP NLF License Add Example
+  gather_facts: false
+  collections:
+    - netapp.ontap
+  module_defaults:  # Requires ansible 2.12+
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: always
+  # Variable precedence: vars < vars_prompts < vars_files
+  # vars_files:
+  #   - vars_files.yml
+  vars_prompt:
+    - name: "netapp_password"
+      prompt: "Enter the NetApp Admin Password"
+      private: true
+  vars:
+    nlf_filepath:
+      - NLF-4034389062-EE.txt
+      - NLF-4082368507-EE.txt
+    netapp_hostname: 192.168.7.200
+    netapp_username: admin
+
+  tasks:
+    - name: Add NLF licenses
+      netapp.ontap.na_ontap_license:
+        state: "{{ state | default('present') }}"
+        license_codes:
+          - "{{ lookup('file', item) | string }}"
+      register: ontap_info
+      loop: "{{ nlf_filepath }}"
+
+    - name: Display Captured info
+      ansible.builtin.debug:
+        msg: "{{ ontap_info.results }}"

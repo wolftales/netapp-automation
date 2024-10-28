@@ -2,7 +2,7 @@
 # - name: debug vservers
 #   debug:
 #     msg: "{{ vservers }}"
-- name: Configure  {{item.name}} Vserver
+- name: "Configure  {{ item.name }} Vserver"
   netapp.ontap.na_ontap_svm:
     state:              present
     hostname:           "{{ netapp_hostname }}"
@@ -26,7 +26,7 @@
   with_items:
     "{{ vservers }}"
   when: vservers != None
-- name: Configure '{{ svm.name }}' NVMe Service
+- name: "Configure {{ item.name }} NVMe Service"
   netapp.ontap.na_ontap_nvme:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -40,14 +40,14 @@
     "{{ vservers }}"
   when:
     - item.protocol is defined and item.protocol is search("nvme".lower())
-# - name: debug nvme check
-#   debug: 
-#     msg: "NVME enabled"
-#   with_items:
-#     "{{ vservers }}"
-#   when:
-#     - item.protocol is defined and item.protocol is search("nvme".lower())
-- name: Configure '{{ svm.name }}' iSCSI Service
+- name: debug nvme check
+  debug: 
+    msg: "NVME enabled"
+  with_items:
+    "{{ vservers }}"
+  when:
+    - item.protocol is defined and item.protocol is search("nvme".lower())
+- name: "Configure {{ item.name }} iSCSI Service"
   netapp.ontap.na_ontap_iscsi:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -65,7 +65,7 @@
 ##
 ## FCP is not supported on OTS
 ##
-# - name: Configure '{{ svm.name }}' FCP Service
+# - name: "Configure {{ item.name }} FCP Service"
 #   netapp.ontap.na_ontap_fcp:
 #     state:            present
 #     hostname:         "{{ netapp_hostname }}"
@@ -78,7 +78,7 @@
 #   with_items:
 #     "{{ vservers }}"
 #   when: item.protocol is search("fcp".lower())
-# - name: Configure '{{ svm.name }}' FC adapter (target)
+# - name: "Configure {{ item.name }} FC adapter (target)"
 #   netapp.ontap.na_ontap_ucadapter:
 #     state:            present
 #     hostname:         "{{ netapp_hostname }}"
@@ -95,7 +95,7 @@
 #   when: vservers.fcp|default(none) != None
 
 
-- name: Configure '{{ item.0.name }}' IP Interfaces
+- name: "Configure '{{ item.0.name }}' IP Interfaces"
   netapp.ontap.na_ontap_interface:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -124,7 +124,7 @@
     interface_type:   "{{ item.1.interface_type   | default(omit) }}"
   loop: "{{ vservers|subelements('lifs', skip_missing=True) }}"
 
-- name: Configure '{{ svm.name }}' Gateway for default route
+- name: "Configure {{ item.name }} Gateway for default route"
   netapp.ontap.na_ontap_net_routes:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -139,7 +139,7 @@
   loop: "{{ vservers|subelements('routes', skip_missing=True) }}"
 
 
-- name: Configure '{{ svm.name }}' DNS
+- name: "Configure {{ item.name }} DNS"
   netapp.ontap.na_ontap_dns:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -157,7 +157,7 @@
    - item.nameservers is defined
    - item.nameservers != None 
 
-- name: Configure '{{ svm.name }}' CIFS Server
+- name: "Configure {{ item.name }} CIFS Server"
   netapp.ontap.na_ontap_cifs_server:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -179,7 +179,7 @@
   - item.cifs is defined
   - item.cifs != None
 
-- name: Configure '{{ svm.name }}' CIFS Domain Tunnel
+- name: "Configure {{ item.name }} CIFS Domain Tunnel"
   netapp.ontap.na_ontap_domain_tunnel:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -193,7 +193,7 @@
   when:
   - item.cifs.domain_tunnel|default(false)
 
-- name: Configure '{{ svm.name }}' NFS Server
+- name: "Configure {{ item.name }} NFS Server"
   netapp.ontap.na_ontap_nfs:
     state:            present
     hostname:         "{{ netapp_hostname }}"
@@ -214,7 +214,7 @@
   when:
     - item.protocol is search("nfs".lower())
 
-- name: Configure '{{ svm.name }}' default export-policy for RO
+- name: "Configure {{ sitem.name }} default export-policy for RO"
   netapp.ontap.na_ontap_export_policy_rule:
     state:            present
     hostname:         "{{ netapp_hostname }}"

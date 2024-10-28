@@ -1,6 +1,33 @@
 # Exclude List
 !add_ssh_publickey.yml
 
+# Common credential, password and secrets files
+**/credentials.json
+**/config.json
+**/client_secrets.json
+**/client_secret.json
+**/secrets.json
+**/secret_*.json
+*creds*
+*credentials*
+*.dat
+*password*
+*.httr-oauth*
+
+
+*.key
+*.pem
+*.pfx
+*.cer
+*.crt
+
+# Ansible Secrets and Vault Files
+**/vault.yml
+**/vault.yaml
+**/ansible_vault*
+**/group_vars/*vault*
+**/host_vars/*vault*
+
 # General ignore list
 # files/ONTAP/*
 # files/StorageGRID/*
