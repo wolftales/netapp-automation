@@ -1,0 +1,69 @@
+---
+- hosts: localhost
+  name: GET Clusters
+  gather_facts: false
+  # ignore_errors: true
+
+  # vars_files:
+  #   - ../vars/vars_aiqum.yml
+
+  vars:
+    aiqum_hostname: 192.168.7.225
+    base_url:   "https://{{ aiqum_hostname }}/api"  # NetApp AIQUM API Base URL
+    endpoint:   "/datacenter/cluster/clusters"  # NetApp AIQUM API endpoint
+    api_url:    "{{ base_url }}{{ endpoint }}"
+    aiqum:
+      username:       admin
+      password:       Netapp1!
+
+
+  tasks:
+    ##
+    # AIQUM API calls - GET Performance Service Levels (PSLs)
+    ##
+
+    - name: GET Clusters from AIQUM
+      uri:
+        url: "{{ api_url }}"
+        user: "{{ aiqum.username }}"
+        password: "{{ aiqum.password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        method: GET
+        headers:
+          content-Type: application/json
+          accept: application/json
+        body_format: json
+        status_code: 200
+      register: json_response
+
+    # Display API GET results
+    - debug:
+        var: json_response
+      name: 'Display post_result'
+
+    ##
+    # Validate contents of var: List Clusters with details
+    ##
+
+    # Display Select(relevant) Informaiton from Performance Service Levels (PSLs)
+    - debug:
+        msg:
+          {
+            "Cluster Name":               "{{ item.name }}",
+            "Cluster Model":              "{{ item.models }}",
+            "Cluster Location":           "{{ item.location }}",
+            "Cluster Contact":            "{{ item.contact }}",
+            "Cluster Management IP":      "{{ item.management_ip }}",
+            "Cluster Software ONTAP Version":   "{{ item.version.generation }}.{{ item.version.major }}.{{ item.version.minor }}",
+            "Cluster UUID":               "{{ item.uuid }}",
+            "ASA Cluster":                "{{ item.is_san_optimized}}",
+            "Cluster Protocols":          "{{ item.protocol_breakdown }}",
+            "Cluster Storage":            "{{ item.storage_capacity }}"
+          }
+      name: 'Display API GET PSL results'
+
+      loop: "{{ json_response.json.records }}"
+      loop_control:
+        label: "{{ item.name }}"
+      # when:  item.system_defined == true
