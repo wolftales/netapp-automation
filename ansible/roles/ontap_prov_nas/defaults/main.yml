@@ -1,0 +1,74 @@
+---
+# defaults file for na-ontap-nas-create
+netapp_hostname:
+netapp_password:
+netapp_username:
+https: true
+validate_certs: false
+admin_user_name:
+admin_password:
+volumes:
+# - svm: 
+#   protocol:                 # cifs, nfs or multi-protocol (concurrent cifs & NFS access)
+#   aggr:  
+#   flexvol_name: 
+#   size: 
+#   # Optional parameters below
+#   comment: 
+#   tags:
+#   junction_path:         
+#   size_unit:
+#   size_change_threshold:
+#   uid:
+#   gid:
+#   unix_permissions:
+#   volume_security_style:  "unix"
+#   percent_snapshot_space:
+#   snapshot_policy:
+#   snapshot_auto_delete:
+#   tiering_policy:
+#   efficiency_policy:
+#   export_policy:
+#   qos_policy_group:
+#   qos_adaptive_policy_group:
+#   space_guarantee:
+#   space_slo:
+#   wait_for_completion:
+#   encrypt:
+#   type:
+#   mode:
+#   grow_precent:
+#   max:
+#   min:
+#   reset:
+#   shrink_precent:
+cifs_shares:
+# - svm: 
+#   name: 
+#   comment: 
+#   # Optional parameters below
+#   junction_path: 
+#   allow_unencrypted: 
+#   browsable: 
+#   namespace_caching: 
+#   continuously_available: 
+#   encryption:               # Controls whether encryption must be used
+#   home_directory: 
+#   oplocks: 
+#   change_notify: 
+#   show_previous_versions: 
+#   show_snapshot: 
+#   unix_symlink:             # local, widelink or disable
+nfs_exports:
+# - name:               # default
+#   svm:                # vs0
+#   rule_index:         # 1
+#   client_match:       # ['0.0.0.0/0']
+#   ro:                 # any
+#   rw:                 # none
+#   # Optional parameters below
+#   protocol:           # nfs
+#   su:                 # none
+#   anonymous:          # 65534
+#   suid:               # false 
+#   ntfs_unix_security: # fail

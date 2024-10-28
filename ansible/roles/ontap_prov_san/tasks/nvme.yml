@@ -1,0 +1,94 @@
+---
+# tasks file for ontap-prov-san - NVMe
+- name: Provision NVMe '{{ vserver_name }}' Volume
+  netapp.ontap.na_ontap_volume:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    name:                   "{{ item.flexvol_name }}"
+    aggregate_name:         "{{ item.aggr if item.aggr != None else (hostvars[inventory_hostname]['aggrs'] | random).name }}"
+    size:                   "{{ item.size }}"
+    size_unit:              "{{ item.size_unit              | default('gb') }}"
+    size_change_threshold:  "{{ item.size_change_threshold  | default(10 | int) }}"
+    junction_path:          ""  # LUNs do not use a junction-path
+    user_id:                "{{ item.uid                    | default(0 | int) }}"
+    group_id:               "{{ item.gid                    | default(0 | int) }}"
+    unix_permissions:       "{{ item.unix_permissions       | default('744') }}"  # —rwxr--r--
+    volume_security_style:  "{{ item.volume_security_style  | default('unix') }}"
+    percent_snapshot_space: "{{ item.percent_snapshot_space | default(5 | int) }}"
+    snapshot_policy:        "{{ item.snapshot_policy        | default('none') }}"
+    snapshot_auto_delete:   "{{ item.snapshot_auto_delete   | default(omit) }}"
+    tiering_policy:         "{{ item.tiering_policy         | default('none') }}"
+    efficiency_policy:      "{{ item.efficiency_policy      | default(omit) }}"
+    export_policy:          "{{ item.export_policy          | default('default') }}"
+    qos_policy_group:       "{{ item.qos_policy_group       | default(omit) }}"
+    qos_adaptive_policy_group: "{{ item.qos_adaptive_policy_group | default(omit) }}"
+    space_guarantee:        "{{ item.space_guarantee        | default('none') }}"
+    space_slo:              "{{ item.space_slo              | default(omit) }}"
+    wait_for_completion:    "{{ item.wait_for_completion    | default(omit) }}"
+    encrypt:                "{{ item.encrypt                | default('false') }}"
+    type:                   "{{ item.type                   | default('RW') }}"
+    tags:                   "{{ item.tags                   | default(omit) }}"
+    comment:                "{{ item.comment                | default(omit) }}"
+  with_items:
+    "{{ luns }}"
+  when: luns is defined and luns != None and (item.protocol.lower() == 'nvme' or item.protocol.lower() == 'iscsi')
+- name: Provision NVMe '{{ vserver_name }}' Volume Autosize
+  netapp.ontap.na_ontap_volume_autosize:
+    # state:                  present  # Not implemented within this module
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    volume:                 "{{ item.flexvol_name }}"
+    mode:                   "{{ item.mode             | default('grow') }}"
+    grow_threshold_percent: "{{ item.grow_precent     | default(98 | int) }}"
+    # increment_size:         "{{ item.increment_size   | default('1g') }}" # ZAPI only
+    maximum_size:           "{{ item.max              | default(omit) }}"
+    minimum_size:           "{{ item.min              | default(omit) }}"
+    reset:                  "{{ item.reset            | default(omit) }}"
+    shrink_threshold_percent: "{{ item.shrink_precent | default(50 | int) }}"
+  with_items:
+    "{{ luns }}"
+  when: luns is defined and luns != None
+- name: Provision NVMe '{{ vserver_name }}' Namespace
+  netapp.ontap.na_ontap_nvme_namespace:
+    state:            present
+    hostname:         "{{ netapp_hostname }}"
+    username:         "{{ netapp_username }}"
+    password:         "{{ netapp_password }}"
+    https:            "{{ https }}"
+    validate_certs:   "{{ validate_certs }}"
+    vserver:          "{{ item.svm }}"
+    path:             "/vol/{{ item.flexvol_name }}/{{ item.namespace_num | default('ns1') }}"
+    ostype:           "{{ item.ostype }}"
+    size:             "{{ item.size }}"
+    size_unit:        "{{ item.size_unit              | default('gb') }}"
+    block_size:       "{{ item.block_size             | default(omit) }}"
+  with_items:
+    "{{ nvme_namespace }}"
+  when: nvme_namespace is defined and nvme_namespace != None
+- name: Provision NVMe '{{ vserver_name }}' host/map
+  netapp.ontap.na_ontap_nvme_subsystem:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    subsystem:              "{{ item.subsystem }}"
+    hosts:                  "{{ item.nqns }}"
+    paths:                  "/vol/{{ item.flexvol_name }}/{{ item.namespace_num | default('ns1') }}"
+    ostype:                 "{{ item.ostype }}"
+    skip_host_check:        "{{ item.skip_host_check    | default(omit) }}"
+    skip_mapped_check:      "{{ item.skip_mapped_check  | default(omit) }}"
+  with_items:
+    "{{ nvme_namespace }}"
+  when: nvme_namespace != None

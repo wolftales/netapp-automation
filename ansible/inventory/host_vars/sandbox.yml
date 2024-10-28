@@ -73,7 +73,7 @@ snmp_traphosts:
   - 10.61.102.5
 aggrs:
   - {
-    name: "{{ cluster_name }}_01_SSD_1",
+    name: "{{ cluster_name }}_01_aggr_1",
     node: "{{ cluster_name }}-01",
     disk_count: 24,
     raid_size: 24,
@@ -81,7 +81,23 @@ aggrs:
     is_mirrored: false,
   }
   - {
-    name: "{{ cluster_name }}_02_SSD_1",
+    name: "{{ cluster_name }}_01_aggr_2",
+    node: "{{ cluster_name }}-01",
+    disk_count: 24,
+    raid_size: 24,
+    raid_type: raid_dp,
+    is_mirrored: false,
+  }
+  - {
+    name: "{{ cluster_name }}_02_aggr_1",
+    node: "{{ cluster_name }}-02",
+    disk_count: 24,
+    raid_size: 24,
+    raid_type: raid_dp,
+    is_mirrored: false,
+  }
+  - {
+    name: "{{ cluster_name }}_02_aggr_2",
     node: "{{ cluster_name }}-02",
     disk_count: 24,
     raid_size: 24,

@@ -75,5 +75,5 @@
           - "netapp_hostname is {{ inventory_hostname }}"
           - "netapp_hostname is {{ netapp_hostname | default('<|HOSTNAME UNDEFINED|>') }}"
           - "netapp_username is {{ netapp_username | default('<|USERNAME UNDEFINED|>')  }}"
-          - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
-          # - "netapp_password is {{ '<|PASSWORD SET|>' if netapp_password is defined else '<|PASSWORD UNDEFINED|>' }}"
+          # - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
+          - "netapp_password is {{ '<|PASSWORD SET|>' if netapp_password is defined else '<|PASSWORD UNDEFINED|>' }}"

@@ -1,0 +1,128 @@
+# Select Provision - NAS FlexVols
+---
+- name: Provision NAS '{{ vserver_name }}' Create export-policy
+  netapp.ontap.na_ontap_export_policy:
+    state:            present
+    hostname:         "{{ netapp_hostname }}"
+    username:         "{{ netapp_username }}"
+    password:         "{{ netapp_password }}"
+    https:            "{{ https }}"
+    validate_certs:   "{{ validate_certs }}"
+    name:             "{{ item.name }}"
+    vserver:          "{{ item.svm }}"
+  with_items: "{{ nfs_exports }}"
+  when:
+  - nfs_exports is defined
+  - item.protocol is search("nfs".lower()) or item.protocol is search("any".lower())
+- name: Provision NAS '{{ vserver_name }}' Setup export-policy rules
+  netapp.ontap.na_ontap_export_policy_rule:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    policy_name:            "{{ item.name }}"
+    client_match:           "{{ item.client_match }}"
+    ro_rule:                "{{ item.ro }}"
+    rw_rule:                "{{ item.rw }}"
+    rule_index:             "{{ item.rule_index             | default(omit) }}"
+    protocol:               "{{ item.protocol               | default('nfs') }}"
+    super_user_security:    "{{ item.su                     | default('sys') }}"
+    anonymous_user_id:      "{{ item.anonymous_user_id      | default('65534') }}"
+    allow_device_creation:  "{{ item.allow_device_creation  | default(omit) }}"
+    allow_suid:             "{{ item.allow_suid             | default(omit) }}"
+    ntfs_unix_security:     "{{ item.ntfs_unix_security     | default('fail') }}"
+    chown_mode:             "{{ item.chown_mode             | default('restricted') }}"
+  with_items:
+    "{{ nfs_exports }}"
+  when:
+  - nfs_exports is defined
+  - item.protocol is search("nfs".lower()) or item.protocol is search("any".lower())
+- name: Provision NAS '{{ vserver_name }}' Volume
+  netapp.ontap.na_ontap_volume:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    name:                   "{{ item.flexvol_name }}"
+    aggregate_name:         "{{ item.aggr if item.aggr != None else (hostvars[inventory_hostname]['aggrs'] | random).name }}"
+    size:                   "{{ item.size }}"
+    size_unit:              "{{ item.size_unit              | default('gb') }}"
+    size_change_threshold:  "{{ item.size_change_threshold  | default(10 | int) }}"
+    junction_path:          "/{{ item.junction_path if item.junction_path is defined and not None else item.flexvol_name }}"
+    user_id:                "{{ item.uid                    | default(0 | int) }}"
+    group_id:               "{{ item.gid                    | default(0 | int) }}"
+    unix_permissions:       "{{ item.unix_permissions       | default('755') }}"
+    volume_security_style:  "{{ item.volume_security_style  | default('unix') }}"
+    analytics:              "{{ item.analytics              | default(omit) }}"
+    percent_snapshot_space: "{{ item.percent_snapshot_space | default(5 | int) }}"
+    snapshot_policy:        "{{ item.snapshot_policy        | default('default') }}"
+    snapshot_auto_delete:   "{{ item.snapshot_auto_delete   | default(omit) }}"
+    tiering_policy:         "{{ item.tiering_policy         | default('none') }}"
+    export_policy:          "{{ 'default' if item.protocol | lower == 'cifs' else item.export_policy | default('default') }}"
+    qos_policy_group:       "{{ item.qos_policy_group       | default(omit) }}"
+    qos_adaptive_policy_group: "{{ item.qos_adaptive_policy_group | default(omit) }}"
+    efficiency_policy:      "{{ item.efficiency_policy      | default(omit) }}"
+    logical_space_enforcement: "{{ item.logical_space_enforcement | default('false') }}"
+    logical_space_reporting: "{{ item.logical_space_reporting | default('false') }}"
+    max_files:              "{{ item.max_files              | default(omit) }}"
+    encrypt:                "{{ item.encrypt                | default('false') }}"
+    space_guarantee:        "{{ item.space_guarantee        | default(omit) }}"
+    type:                   "{{ item.type                   | default('RW') }}"
+    wait_for_completion:    "{{ item.wait_for_completion    | default(omit) }}"
+    tags:                   "{{ item.tags                   | default(omit) }}"
+    comment:                "{{ item.comment                | default(omit) }}"
+  with_items:
+    "{{ volumes }}"
+- name: Provision NAS '{{ vserver_name }}' Volume Autosize
+  netapp.ontap.na_ontap_volume_autosize:
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    volume:                 "{{ item.flexvol_name }}"
+    mode:                   "{{ item.mode             | default('grow') }}"
+    grow_threshold_percent: "{{ item.grow_precent     | default(98 | int) }}"
+    maximum_size:           "{{ item.max              | default(omit) }}"
+    minimum_size:           "{{ item.min              | default(omit) }}"
+    reset:                  "{{ item.reset            | default(omit) }}"
+    shrink_threshold_percent: "{{ item.shrink_precent | default(50 | int) }}"
+  with_items:
+    "{{ volumes }}"
+- name: Provision NAS '{{ vserver_name }}' CIFS Share
+  netapp.ontap.na_ontap_cifs:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    share_name:             "{{ item.name }}"
+    path:                   "/{{ item.path if item.path is defined and not None else item.name }}"
+    access_based_enumeration: "{{ item.abe                  | default(true) }}"
+    allow_unencrypted_access: "{{ item.allow_unencrypted    | default(false) }}"
+    browsable:                "{{ item.browsable            | default(false) }}"
+    namespace_caching:        "{{ item.namespace_caching    | default(true) }}"
+    continuously_available:   "{{ item.continuously_available | default(false) }}"
+    encryption:               "{{ item.encryption           | default(true) }}"
+    home_directory:           "{{ item.home_directory       | default(false) }}"
+    oplocks:                  "{{ item.oplocks              | default(true) }}"
+    change_notify:            "{{ item.change_notify        | default(true) }}"
+    show_previous_versions:   "{{ item.show_previous_versions | default(true) }}"
+    show_snapshot:            "{{ item.show_snapshot        | default(true) }}"
+    unix_symlink:             "{{ item.unix_symlink         | default('local') }}"
+    comment:                  "{{ item.comment                | default(omit) }}"
+  with_items:
+    "{{ cifs_shares }}"
+  when:
+  - cifs_shares is defined and cifs_shares != None
+  - item.share is defined
+  - item.protocol is search("cifs".lower())

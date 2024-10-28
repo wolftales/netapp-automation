@@ -1,0 +1,6 @@
+---
+- name: "Execute NAS Provisioning"
+  include_tasks: nas.yml
+  when: 
+  - volumes is defined 
+  - volumes != None

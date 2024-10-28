@@ -1,0 +1,55 @@
+#######################################################
+# 
+#   Author:     Ken Hillier
+#   Date:       05 Oct 23
+# 
+#   Description:  Playbook that Provisions ONTAP Select's NFS, SMB, iSCSI LUNs & NVMe namespaces.
+# 
+#   Dependencies:  
+# 
+#######################################################
+---
+- name: NetApp ONTAP Select Provision NAS / SAN
+  hosts: ontapclusters
+  gather_facts: false
+  collections:
+    - netapp.ontap
+  module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: always
+  vars_files:
+    - ../vars/credentials.yml
+    # - ../vars/demo1_nfs_test.yml
+    # - ../vars/test130_nvme_test.yml
+  # vars_prompt:
+  #   - name: admin_username
+  #     prompt: AD Domain admin account
+  #     default: "administrator"
+  #     private: no
+  #   - name: admin_password
+  #     prompt: AD Domain admin account password
+  #     confirm: yes
+  #     private: yes
+  vars:
+    netapp_hostname: "{{ cluster_ip }}"
+    vserver_name: vs0
+
+  tasks:
+
+    # - name: Print VAR for Troubleshooting
+    #   ansible.builtin.debug: 
+    #     msg: 
+    #     - "{{ inventory_hostname }}"
+    #     - "{{ ansible_host }}"
+
+    - import_role:
+        name: ontap_prov_nas
+
+    - import_role:
+        name: ontap_prov_san
+

@@ -1,0 +1,12 @@
+---
+- name: "Execute iSCSI Provisioning"
+  include_tasks: iscsi.yml
+  when: 
+  - luns != None
+  - igroups != None
+
+- name: "Execute NVMe Provisioning"
+  include_tasks: nvme.yml
+  when: 
+  - luns != None
+  - nvme_namespace != None

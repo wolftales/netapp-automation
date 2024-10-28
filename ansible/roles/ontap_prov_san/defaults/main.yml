@@ -1,0 +1,70 @@
+---
+# defaults file for na-ontap-san-create
+netapp_hostname:
+netapp_password:
+netapp_username:
+https: true
+validate_certs: false
+
+# # Required inputs 
+luns:
+# - svm:                    
+#   aggr:                   
+#   flexvol_name:                                  
+#   size:                   
+#   protocol:                 # iscsi, fcp & nvme - fcp & nvme not implemented yet
+#   ostype: 
+#   # Optional Inputs for san - system defaults
+#   comment:
+#   tags:
+#   junction_path: ""  # SAN doesn't mount in the vserver namespace
+#   lun_name:           # Defaults to flexvol_name
+#   lun_id:
+#   size_unit:
+#   size_change_threshold:
+#   uid:
+#   gid:
+#   unix_permissions:
+#   volume_security_style: "unix"
+#   percent_snapshot_space:
+#   snapshot_policy:
+#   snapshot_auto_delete:
+#   tiering_policy:
+#   efficiency_policy:
+#   export_policy:
+#   qos_policy_group:
+#   qos_adaptive_policy_group:
+#   space_guarantee:
+#   space_slo:
+#   wait_for_completion:
+#   encrypt:
+#   type:
+#   mode:
+#   grow_precent:
+#   max:
+#   min:
+#   reset:
+#   shrink_precent:
+
+# # Required for iSCSI & FC/FCoE
+igroups: 
+# - svm: 
+#   name: 
+#   initiator: 
+#   protocol: 
+#   ostype: 
+
+# # Required for NVMe
+nvme_namespace:
+# - svm:        "{{ svm.name }}"
+#   subsystem:  
+#   name:       nvme_test_01
+#   nqns:       xxyyzz
+#   paths:         
+#   skip_host_check: 
+#   skip_mapped_check:
+#   path:       
+#   ostype:  
+#   size:   
+#   size_unit: 
+#   block_size: 

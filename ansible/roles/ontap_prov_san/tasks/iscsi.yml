@@ -1,0 +1,113 @@
+---
+# tasks file for na-ontap-san-create - iscsi
+- name: Provision SAN '{{ vserver_name }}' iGroup
+  netapp.ontap.na_ontap_igroup:
+    state:            present
+    hostname:         "{{ netapp_hostname }}"
+    username:         "{{ netapp_username }}"
+    password:         "{{ netapp_password }}"
+    https:            "{{ https }}"
+    validate_certs:   "{{ validate_certs }}"
+    vserver:          "{{ item.svm }}"
+    name:             "{{ item.name }}"
+    ostype:           "{{ item.ostype                       | default('linux') }}"
+    initiator:        "{{ item.initiator                    | default(omit) }}"
+    initiator_group_type: "{{ item.protocol.lower()         | default('iscsi') }}"
+  with_items:
+    "{{ igroups }}"
+  when: igroups is defined and igroups != None
+- name: Provision SAN '{{ vserver_name }}' Volume
+  netapp.ontap.na_ontap_volume:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    name:                   "{{ item.flexvol_name }}"
+    aggregate_name:         "{{ item.aggr }}"
+    size:                   "{{ item.size }}"
+    size_unit:              "{{ item.size_unit              | default('gb') }}"
+    size_change_threshold:  "{{ item.size_change_threshold  | default(10 | int) }}"
+    junction_path:          ""  # LUNs do not use a junction-path
+    user_id:                "{{ item.uid                    | default(0 | int) }}"
+    group_id:               "{{ item.gid                    | default(0 | int) }}"
+    unix_permissions:       "{{ item.unix_permissions       | default('744') }}"  # —rwxr--r--
+    volume_security_style:  "{{ item.volume_security_style  | default('unix') }}"
+    percent_snapshot_space: "{{ item.percent_snapshot_space | default(0 | int) }}"
+    snapshot_policy:        "{{ item.snapshot_policy        | default('none') }}"
+    snapshot_auto_delete:   "{{ item.snapshot_auto_delete   | default(omit) }}"
+    tiering_policy:         "{{ item.tiering_policy         | default('none') }}"
+    efficiency_policy:      "{{ item.efficiency_policy      | default(omit) }}"
+    export_policy:          "{{ item.export_policy          | default('default') }}"
+    qos_policy_group:       "{{ item.qos_policy_group       | default(omit) }}"
+    qos_adaptive_policy_group: "{{ item.qos_adaptive_policy_group | default(omit) }}"
+    space_guarantee:        "{{ item.space_guarantee        | default('none') }}"
+    space_slo:              "{{ item.space_slo              | default(omit) }}"
+    wait_for_completion:    "{{ item.wait_for_completion    | default(omit) }}"
+    encrypt:                "{{ item.encrypt                | default('false') }}"
+    type:                   "{{ item.type                   | default('RW') }}"
+    tags:                   "{{ item.tags                   | default(omit) }}"
+    comment:                "{{ item.comment                | default(omit) }}"
+  with_items:
+    "{{ luns }}"
+  when: luns is defined and luns != None and (item.protocol.lower() == 'nvme' or item.protocol.lower() == 'iscsi')
+- name: Provision SAN '{{ vserver_name }}' Volume Autosize
+  netapp.ontap.na_ontap_volume_autosize:
+    # state:                  present  # Not implemented within this module
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    volume:                 "{{ item.flexvol_name }}"
+    mode:                   "{{ item.mode             | default('grow') }}"
+    grow_threshold_percent: "{{ item.grow_precent     | default(98 | int) }}"
+    # increment_size:         "{{ item.increment_size   | default('1g') }}" # ZAPI only
+    maximum_size:           "{{ item.max              | default(omit) }}"
+    minimum_size:           "{{ item.min              | default(omit) }}"
+    reset:                  "{{ item.reset            | default(omit) }}"
+    shrink_threshold_percent: "{{ item.shrink_precent | default(50 | int) }}"
+  with_items:
+    "{{ luns }}"
+  when: luns is defined and luns != None
+- name: Provision SAN '{{ vserver_name }}' Lun
+  netapp.ontap.na_ontap_lun:
+    state:            present
+    hostname:         "{{ netapp_hostname }}"
+    username:         "{{ netapp_username }}"
+    password:         "{{ netapp_password }}"
+    https:            "{{ https }}"
+    validate_certs:   "{{ validate_certs }}"
+    vserver:          "{{ item.svm }}"
+    # name:             "{{ item.flexvol_name }}"
+    name:             "{{ item.lun_name if item.lun_name is defined else item.flexvol_name }}"
+    flexvol_name:     "{{ item.flexvol_name }}"
+    ostype:           "{{ item.ostype }}"
+    size:             "{{ item.size }}"
+    size_unit:        "{{ item.size_unit              | default('gb') }}"
+    space_reserve:    "{{ item.space_reserve          | default('false') }}"
+    space_allocation: "{{ item.space_allocation       | default('false') }}"  # Host SCSI Thin provisioning
+    qos_policy_group: "{{ item.qos_policy_group | default(omit) }}"
+    qos_adaptive_policy_group: "{{ item.qos_adaptive_policy_group | default(omit) }}"
+    comment:          "{{ item.comment                | default(omit) }}"
+  with_items:
+    "{{ luns }}"
+  when: luns is defined and luns != None
+- name: Provision SAN '{{ vserver_name }}' LUN mapping
+  netapp.ontap.na_ontap_lun_map:
+    state:            present
+    hostname:         "{{ netapp_hostname }}"
+    username:         "{{ netapp_username }}"
+    password:         "{{ netapp_password }}"
+    https:            "{{ https }}"
+    validate_certs:   "{{ validate_certs }}"
+    vserver:          "{{ item.svm }}"
+    initiator_group_name: "{{ item.igroup             | default('nohost') }}"
+    path:             "/vol/{{ item.flexvol_name }}/{{ item.lun_name | default(item.flexvol_name) }}"
+    lun_id:           "{{ item.lun_id                 | default(omit) }}"
+  with_items:
+    "{{ luns }}"
+  when: luns is defined and luns != None
