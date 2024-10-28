@@ -1,6 +1,6 @@
 ---
 - hosts: localhost
-  name: AIQUM Get Placement Recommendation
+  name: AIQUM Get Best Available Placement Recommendation
   gather_facts: no
   collections:
     - netapp.ontap
@@ -8,7 +8,7 @@
   vars:
     aiqum_hostname: 192.168.7.225
     base_url:   "https://{{ aiqum_hostname }}/api"  # NetApp AIQUM API Base URL
-    endpoint:   "/datacenter/cluster/clusters"  # NetApp AIQUM API endpoint
+    endpoint:   "/storage-provider/data-placement"  # NetApp AIQUM API endpoint
     api_url:    "{{ base_url }}{{ endpoint }}"
     aiqum:
       username:       admin
@@ -22,6 +22,7 @@
     convert:            "{{ size * 1073741824 }}"  # volume size * 1 GB = 1073741824 B
     capacity:           "{{ convert }}"         # volume size in bytes 1 GB = 1073741824 B
     # auto_size:          grow_shrink             # off, grow, or grow_shrink
+    priority_order:     [ "size", "latency", "volume_count", "ops" ]
 
   vars_files:
   - ../vars/vars_aiqum.yml
@@ -165,11 +166,11 @@
 #  --data '{ "method": "get",}'
 ##
 
-  - name: AIQUM Provision - GET Placement Recommendation
+  - name: AIQUM Provision - POST Placement Recommendation
     uri:
-      method: GET
+      method: POST
       # url: "{{ aiqum.api_endpoint }}/datacenter/storage/data-placement"  # GET doesn't support query paramters in the body
-      url: "{{ base_url }}/datacenter/storage/data-placement?capacity={{ capacity }}&performance_service_level_uuid={{ service_level_key }}"
+      url: "{{ base_url }}/storage-provider/data-placement?capacity={{ capacity }}&performance_service_level_uuid={{ service_level_key }}"
       force_basic_auth: yes
       url_username: "{{ aiqum.username }}"
       url_password: "{{ aiqum.password }}"
@@ -179,6 +180,14 @@
       status_code: 200
       return_content: yes
 
+      body:
+        # name: "{{ vol_name }}"
+        ssl_key:  "{{ service_level_key }}"
+        capacity: "{{ capacity }}"
+        priority_order: "{{ priority_order }}"
+        resource_keys:
+          # key: "{{ svm_key }}"
+      body_format: json
     register: json_response
 
 # DEBUG - Display ALL Output for development

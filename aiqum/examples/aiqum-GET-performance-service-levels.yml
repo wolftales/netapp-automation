@@ -5,9 +5,16 @@
   # ignore_errors: true
 
   vars:
+    aiqum_hostname: 192.168.7.225
+    base_url:   "https://{{ aiqum_hostname }}/api"  # NetApp AIQUM API Base URL
+    endpoint:   "/datacenter/cluster/clusters"  # NetApp AIQUM API endpoint
+    api_url:    "{{ base_url }}{{ endpoint }}"
+    aiqum:
+      username:       admin
+      password:       Netapp1!
 
-  vars_files:
-    - ../../deploy_vms/vars/vars_aiqum.yml
+  # vars_files:
+  #   - ../../deploy_vms/vars/vars_aiqum.yml
 
   tasks:
     ##
@@ -16,7 +23,7 @@
 
     - name: GET new Performance Service Levels
       uri:
-        url: "{{ aiqum.api_endpoint }}/storage-provider/performance-service-levels"
+        url: "{{ base_url }}/storage-provider/performance-service-levels"
         user: "{{ aiqum.username }}"
         password: "{{ aiqum.password }}"
         force_basic_auth: yes
