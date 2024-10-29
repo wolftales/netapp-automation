@@ -36,13 +36,15 @@
   vars:
     vserver_name: vs0
 
+
   tasks:
 
-    # - name: Print VAR for Troubleshooting
-    #   ansible.builtin.debug: 
-    #     msg: 
-    #     - "{{ inventory_hostname }}"
-    #     - "{{ ansible_host }}"
+    - name: Print VAR for Troubleshooting
+      ansible.builtin.debug: 
+        msg: 
+        - "{{ inventory_hostname }}"
+        - "{{ ansible_host }}"
+        - "{{ volumes }}"
 
     - import_role:
         name: ontap_prov_nas

@@ -13,6 +13,8 @@
 #     - This playbook is designed to be run from the Ansible Control Host.
 #     - The playbook is designed to be run against a single NetApp ONTAP cluster.
 #     - NVMe license is required for NVMe configuration.
+#     - The playbook is designed to be run in a lab environment.
+#     - Variable license_path supercedes license_code.
 #
 #######################################################
 ---
@@ -30,17 +32,20 @@
       validate_certs: false
       use_rest: always
   # vars_files:
-  vars_prompt:
-    - name: admin_username
-      prompt: AD Domain admin account
-      default: "administrator"
-      private: false
-    - name: admin_password
-      prompt: AD Domain admin account password
-      confirm: true
-      private: true
-  # vars:
+  # vars_prompt:
+  #   - name: admin_username
+  #     prompt: AD Domain admin account
+  #     default: "administrator"
+  #     private: false
+  #   - name: admin_password
+  #     prompt: AD Domain admin account password
+  #     confirm: true
+  #     private: true
+  vars:
   #   netapp_hostname: "{{ cluster.net.mgmt }}"
+    license_path:
+      - ../vars/NLF-4034389062-EE.txt
+      - ../vars/NLF-4082368507-EE.txt
 
   tasks:
 
@@ -62,32 +67,32 @@
     #       - "netapp_username is {{ netapp_username | default('<|USERNAME UNDEFINED|>')  }}"
     #       - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
 
-    # - import_role:
-    #     name: na_ontap_cluster_config_v4
-
-    # - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
-    #   ansible.builtin.debug:
-    #     msg:
-    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-    #       - "=                                                       ="
-    #       - "=              Netapp ONTAP Select                      ="
-    #       - "=          Configuration Complete for:                  ="
-    #       - "=                                                       ="
-    #       - "=          Cluster: {{ cluster_name }}"
-    #       - "=                                                       ="
-    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-
     - import_role:
-        name: na_ontap_vserver_create_v3
+        name: na_ontap_cluster_config_v4
 
-    - name: "Completed ONTAP VServer config: {{ cluster_name }}"
+    - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
       ansible.builtin.debug:
         msg:
           - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
           - "=                                                       ="
-          - "=              Netapp ONTAP                             ="
+          - "=              Netapp ONTAP Select                      ="
           - "=          Configuration Complete for:                  ="
           - "=                                                       ="
-          - "=          VServer: {{ cluster_name }}"
+          - "=          Cluster: {{ cluster_name }}"
           - "=                                                       ="
           - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+
+    # - import_role:
+    #     name: na_ontap_vserver_create_v3
+
+    # - name: "Completed ONTAP VServer config: {{ cluster_name }}"
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+    #       - "=                                                       ="
+    #       - "=              Netapp ONTAP                             ="
+    #       - "=          Configuration Complete for:                  ="
+    #       - "=                                                       ="
+    #       - "=          VServer: {{ cluster_name }}"
+    #       - "=                                                       ="
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="

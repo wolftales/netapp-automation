@@ -206,6 +206,7 @@
     nfsv3:            "{{ item.nfs.nfsv3  | default('enabled') }}"
     nfsv4:            "{{ item.nfs.nfsv4  | default('enabled') }}"
     nfsv41:           "{{ item.nfs.nfsv41 | default('disabled') }}"
+    nfsv4_id_domain:  "{{ item.nfs.nfsv4_id_domain | default(omit) }}"
     tcp:              enabled
     udp:              disabled
     vstorage_state:   "{{ item.nfs.vstorage | default('disabled') }}"

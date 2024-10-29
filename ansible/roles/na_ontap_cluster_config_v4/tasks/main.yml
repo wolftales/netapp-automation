@@ -68,19 +68,19 @@
     https:            "{{ https }}"
     validate_certs:   "{{ validate_certs }}"
     license_codes:      "{{ license_codes }}"
-  when: license_codes is defined and license_codes != None
-# - name: Configure '{{ cluster_name }}' NLF licenses
-#   netapp.ontap.na_ontap_license:
-#     state:            present
-#     hostname:         "{{ netapp_hostname }}"
-#     username:         "{{ netapp_username }}"
-#     password:         "{{ netapp_password }}"
-#     https:            "{{ https }}"
-#     validate_certs:   "{{ validate_certs }}"
-#     license_codes:
-#       - "{{ lookup('file', item) | string }}"
-#   loop: "{{ license_path }}"
-#   when: license_path is defined and license_path != None
+  when: license_codes is defined and license_codes != None and license_path is not defined
+- name: Configure '{{ cluster_name }}' NLF licenses
+  netapp.ontap.na_ontap_license:
+    state:            present
+    hostname:         "{{ netapp_hostname }}"
+    username:         "{{ netapp_username }}"
+    password:         "{{ netapp_password }}"
+    https:            "{{ https }}"
+    validate_certs:   "{{ validate_certs }}"
+    license_codes:
+      - "{{ lookup('file', item) | string }}"
+  loop: "{{ license_path }}"
+  when: license_path is defined and license_path != None
 - name: Configure '{{ cluster_name }}' DNS
   netapp.ontap.na_ontap_dns:
     state:            present

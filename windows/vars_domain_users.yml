@@ -4,7 +4,12 @@ domain_users:
   - {name: "newton", first: "Issac", sur: "Newton", passwd: "ChangeMe!", display_name: "Sir Issac Newton", groups: ["Domain Admins", "Domain Users", "Robots"]}
   - {name: "foxtales", first: "Fox", sur: "Tales", passwd: "ChangeMe!", display_name: "Fox Tales", groups: ["Domain Users", "Mammals"]}
   - {name: "optimus", first: "Optimus", sur: "Prime", passwd: "ChangeMe!", display_name: "Autobot Leader Optimus Prime", groups: ["Domain Users", "Robots"]}
-  - {name: "dirk", first: "Dirk", sur: "Benedict", passwd: "ChangeMe!", display_name: "Dirk Benedict the Face", groups: ["Domain Users", "Avians"]}
+  - {name: "dirk", first: "Dirk", sur: "Benedict", passwd: "ChangeMe!", display_name: "Dirk Benedict the Face", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "starbuck", first: "Starbuck", sur: "Thrace",  passwd: "ChangeMe!", display_name: "Starbuck Thrace", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "apollo", first: "Apollo", sur: "Adama", passwd: "ChangeMe!", display_name: "Apollo Adama", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "adama", first: "William", sur: "Adama", passwd: "ChangeMe!", display_name: "William Adama", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "cylon", first: "Cylon", sur: "Number Six", passwd: "ChangeMe!", display_name: "Cylon Number Six", groups: ["Domain Users", "Robots"]}
+  - {name: "harvey", first: "Harvey", sur: "Birdman", passwd: "ChangeMe!", display_name: "Harvey Raymond Randall Birdman, Superhero/Attorney at law", groups: ["Domain Users", "Avians"]}
   - {name: "tron", first: "tron", sur: "TRON-JA-307020", passwd: "ChangeMe!", display_name: "tron TRON-JA-307020", groups: ["Domain Users", "Virtual Intelligence"]}
   - {name: "hal", first: "Hal", sur: "9000", passwd: "ChangeMe!", display_name: "Hal 9000", groups: ["Domain Users", "Virtual Intelligence"]}
   - {name: "mando", first: "Din", sur: "Djarin", passwd: "ChangeMe!", display_name: "Din Djarin", groups: ["Domain Users", "Titans"]}

@@ -124,5 +124,5 @@
     "{{ cifs_shares }}"
   when:
   - cifs_shares is defined and cifs_shares != None
-  - item.share is defined
-  - item.protocol is search("cifs".lower())
+  - item.name is defined
+  # - item.protocol is search("cifs".lower())
