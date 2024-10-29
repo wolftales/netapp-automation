@@ -63,7 +63,7 @@
   when: item.protocol is search("iscsi".lower())
 
 ##
-## FCP is not supported on OTS
+## FCP is not supported on ONTAP Select or ONTAP Simulators
 ##
 # - name: "Configure {{ item.name }} FCP Service"
 #   netapp.ontap.na_ontap_fcp:

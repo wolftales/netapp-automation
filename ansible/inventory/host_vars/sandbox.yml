@@ -124,6 +124,7 @@ inters:
 vservers:
   - name: vs0
     protocol:
+      - cifs
       - iscsi
       - nfs
       - nvme
@@ -158,11 +159,12 @@ vservers:
       - 192.168.7.3
     domains:
       - example.local
-    # cifs:
-    #   cifs_server_name: vs01
-    #   ou:
-    #   domain: example.local
-    #   domain_tunnel: true
+    cifs:
+      cifs_server_name: sandbox-vs0
+      # ou:
+      domain:           example.local
+      domain_tunnel:    true
+      service_state:    started  # defaults to stopped
     nfs:
       nfsv3: enabled
       nfsv4: enabled

@@ -30,16 +30,15 @@
       validate_certs: false
       use_rest: always
   # vars_files:
-  #   - ../inventory/group_vars/vault.yml
-  # vars_prompt:
-  #   - name: admin_username
-  #     prompt: AD Domain admin account
-  #     default: "administrator"
-  #     private: no
-  #   - name: admin_password
-  #     prompt: AD Domain admin account password
-  #     confirm: yes
-  #     private: yes
+  vars_prompt:
+    - name: admin_username
+      prompt: AD Domain admin account
+      default: "administrator"
+      private: false
+    - name: admin_password
+      prompt: AD Domain admin account password
+      confirm: true
+      private: true
   # vars:
   #   netapp_hostname: "{{ cluster.net.mgmt }}"
 
@@ -63,20 +62,20 @@
     #       - "netapp_username is {{ netapp_username | default('<|USERNAME UNDEFINED|>')  }}"
     #       - "netapp_password is {{ netapp_password | default('<|PASSWORD UNDEFINED|>') }}"
 
-    - import_role:
-        name: na_ontap_cluster_config_v4
+    # - import_role:
+    #     name: na_ontap_cluster_config_v4
 
-    - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
-      ansible.builtin.debug:
-        msg:
-          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
-          - "=                                                       ="
-          - "=              Netapp ONTAP Select                      ="
-          - "=          Configuration Complete for:                  ="
-          - "=                                                       ="
-          - "=          Cluster: {{ cluster_name }}"
-          - "=                                                       ="
-          - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+    # - name: "Completed ONTAP Select cluster config: {{ cluster_name }}"
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
+    #       - "=                                                       ="
+    #       - "=              Netapp ONTAP Select                      ="
+    #       - "=          Configuration Complete for:                  ="
+    #       - "=                                                       ="
+    #       - "=          Cluster: {{ cluster_name }}"
+    #       - "=                                                       ="
+    #       - "=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-=_=-="
 
     - import_role:
         name: na_ontap_vserver_create_v3

@@ -1,0 +1,74 @@
+luns:
+- svm:                "{{ vserver_name }}"     
+  aggr:               # Defaults to random 
+  flexvol_name:       nvme_4_win_01                          
+  size:               1   
+  protocol:           nvme      # iscsi, fcp & nvme - fcp & nvme not implemented yet
+  ostype:             windows
+- svm:                "{{ vserver_name }}"     
+  aggr:               # Defaults to random 
+  flexvol_name:       nvme_4_lin_01                          
+  size:               1   
+  protocol:           nvme      # iscsi, fcp & nvme - fcp & nvme not implemented yet
+  ostype:             linux
+- svm:                   "{{ svm.name }}"
+  aggr:                  sandbox_01_aggr_1
+  flexvol_name:          test_iscsi_01         
+  comment:               "This is an iSCSI LUN" 
+  size:                  10   
+  protocol:              iscsi   # iscsi, fcp & nvme - fcp & nvme not implemented yet
+  ostype:                linux
+  # tags:                  "test,san,iscsi"
+  # junction_path: ""  # SAN doesn't mount in the vserver namespace
+  # lun_id:
+  # size_unit:
+  volume_security_style: "unix"
+  percent_snapshot_space: 10
+- svm:                   "{{ svm.name }}"
+  aggr:                  aggr2
+  flexvol_name:          test_iscsi_02         
+  comment:               "This is an iSCSI LUN" 
+  size:                  1   
+  protocol:              iscsi   # iscsi, fcp & nvme - fcp & nvme not implemented yet
+  ostype:                 linux
+  # tags:                  "test,san,iscsi"
+  # junction_path: ""  # SAN doesn't mount in the vserver namespace
+  # lun_id:
+  size_unit:            tb
+  # volume_security_style: "unix"
+  # percent_snapshot_space: 10
+
+# # Required for iSCSI & FC/FCoE
+igroups: 
+- svm:        "{{ svm.name }}"
+  name:       nohost
+  # initiator: 
+  protocol:   iscsi
+  # ostype:     linux
+
+# # Required for NVMe
+nvme_namespace:
+# - svm:        "{{ svm.name }}"
+#   subsystem:  
+#   name:       nvme_test_01
+#   nqns:       xxyyzz
+#   paths:         
+#   skip_host_check: 
+#   skip_mapped_check:
+#   path:       
+#   ostype:  
+#   size:   
+#   size_unit: 
+#   block_size: 
+- svm:               "{{ vserver_name }}"  
+  subsystem:          superman
+  nqns:               nqn.1995-08.com.example:string1985
+  flexvol_name:       nvme_4_win_01
+  ostype:             windows
+  size:               1
+- svm:               "{{ vserver_name }}"  
+  subsystem:          wonderwoman
+  nqns:               nqn.1995-08.com.example:string1984
+  flexvol_name:       nvme_4_lin_01
+  ostype:             linux
+  size:               1

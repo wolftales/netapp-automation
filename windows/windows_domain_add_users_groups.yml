@@ -1,0 +1,68 @@
+---
+- name: Add Domain User enteries to AD
+  hosts: localhost
+  gather_facts: false
+  vars:
+    state: present
+  vars_files:
+    - vars_creds_example.yml
+    - vars_domain_users.yml
+
+  tasks:
+    - name: Add host to Ansible inventory
+      ansible.builtin.add_host:
+        name: "{{ dc_address }}"
+        ansible_user: .\administrator
+        ansible_password: "{{ lab_password }}"
+        ansible_connection: winrm
+        ansible_winrm_transport: ntlm
+        ansible_winrm_server_cert_validation: ignore
+        ansible_winrm_port: 5985  # Using HTTP on 5985
+
+    - name: "Create Domain Groups for: {{ lab_domain }}"
+      microsoft.ad.group:
+        state: "{{ state }}"
+        identity: "{{ item.name }}"
+        scope: "{{ item.scope }}"
+        category: "{{ item.type }}"
+        description: "{{ item.description }}"
+        display_name: "{{ item.display_name }}"
+      loop: "{{ domain_groups }}"
+      delegate_to: "{{ dc_address }}"
+
+    - name: "Create Domain Users for: {{ lab_domain }}"
+      microsoft.ad.user:
+        state: "{{ state }}"
+        name: "{{ item.name }}"
+        firstname: "{{ item.first }}"
+        surname: "{{ item.sur }}"
+        password: "{{ item.passwd }}"
+        groups:
+          set: "{{ item.groups }}"
+      loop: "{{ domain_users }}"
+      delegate_to: "{{ dc_address }}"
+
+
+    - name: Ensure user bob is present with address information
+      microsoft.ad.user:
+        name: bob
+        firstname: Bob
+        surname: Smith
+        company: BobCo
+        password: B0bP4ssw0rd
+        state: present
+        groups:
+          set:
+            - Domain Users
+            - Domain Admins
+            - Titans
+            - Witches
+        street: 123 4th St.
+        city: Sometown
+        state_province: IN
+        postal_code: 12345
+        country: US
+        attributes:
+          set:
+            telephoneNumber: 555-123456
+      delegate_to: "{{ dc_address }}"

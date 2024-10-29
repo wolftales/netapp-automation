@@ -1,0 +1,45 @@
+domain_users:
+  - {name: "wolftales", first: "Wolf", sur: "Tales", passwd: "ChangeMe!", display_name: "Wolf Tales", groups: ["Domain Admins", "Domain Users", "Mammals"]}
+  - {name: "enstein", first: "Albert", sur: "Enstein", passwd: "ChangeMe!", display_name: "Albert Enstein", groups: ["Domain Admins", "Domain Users", "Aliens"]}
+  - {name: "newton", first: "Issac", sur: "Newton", passwd: "ChangeMe!", display_name: "Sir Issac Newton", groups: ["Domain Admins", "Domain Users", "Robots"]}
+  - {name: "foxtales", first: "Fox", sur: "Tales", passwd: "ChangeMe!", display_name: "Fox Tales", groups: ["Domain Users", "Mammals"]}
+  - {name: "optimus", first: "Optimus", sur: "Prime", passwd: "ChangeMe!", display_name: "Autobot Leader Optimus Prime", groups: ["Domain Users", "Robots"]}
+  - {name: "dirk", first: "Dirk", sur: "Benedict", passwd: "ChangeMe!", display_name: "Dirk Benedict the Face", groups: ["Domain Users", "Avians"]}
+  - {name: "tron", first: "tron", sur: "TRON-JA-307020", passwd: "ChangeMe!", display_name: "tron TRON-JA-307020", groups: ["Domain Users", "Virtual Intelligence"]}
+  - {name: "hal", first: "Hal", sur: "9000", passwd: "ChangeMe!", display_name: "Hal 9000", groups: ["Domain Users", "Virtual Intelligence"]}
+  - {name: "mando", first: "Din", sur: "Djarin", passwd: "ChangeMe!", display_name: "Din Djarin", groups: ["Domain Users", "Titans"]}
+  - {name: "salem", first: "Salem", sur: "Cat", passwd: "ChangeMe!", display_name: "Salem the Cat", groups: ["Domain Users", "Witches"]}
+  - {name: "john", first: "John", sur: "Doe", passwd: "ChangeMe!", display_name: "John Doe", groups: ["Domain Users"]}
+  - {name: "jane", first: "Jane", sur: "Doe", passwd: "ChangeMe!", display_name: "Jane Doe", groups: ["Domain Users"]}
+  - {name: "gandalf", first: "Gandalf", sur: "The Grey", passwd: "YouShallNotPass!", display_name: "Gandalf The Grey", groups: ["Domain Users", "Wizards"]}
+  - {name: "legolas", first: "Legolas", sur: "Greenleaf", passwd: "ElvenArcher!", display_name: "Legolas Greenleaf", groups: ["Domain Users", "Elves"]}
+  - {name: "gimli", first: "Gimli", sur: "Son of Gloin", passwd: "DwarvenAxe!", display_name: "Gimli Son of Gloin", groups: ["Domain Users", "Dwarves"]}
+  - {name: "frodo", first: "Frodo", sur: "Baggins", passwd: "RingBearer!", display_name: "Frodo Baggins", groups: ["Domain Users", "Hobbits"]}
+  - {name: "smaug", first: "Smaug", sur: "The Magnificent", passwd: "FireBreath!", display_name: "Smaug The Magnificent", groups: ["Domain Users", "Dragons"]}
+  - {name: "bilbo", first: "Bilbo", sur: "Baggins", passwd: "ChangeMe!", display_name: "Bilbo Baggins", groups: ["Domain Users", "Hobbits"]}
+  - {name: "aragorn", first: "Aragorn", sur: "Son of Arathorn", passwd: "ChangeMe!", display_name: "Aragorn Son of Arathorn", groups: ["Domain Users", "Humans"]}
+
+
+domain_groups:
+  - {name: "Mammals", scope: "Global", type: "Security", description: "Mammals", display_name: "Mammalia"}
+  - {name: "Avians", scope: "Global", type: "Security", description: "Avians", display_name: "Aves"}
+  - {name: "Amphibians", scope: "Global", type: "Security", description: "Amphibians", display_name: "Amphibia"}
+  - {name: "Reptiles", scope: "Global", type: "Security", description: "Reptiles", display_name: "Reptilia"}
+  - {name: "Fish", scope: "Global", type: "Security", description: "Fish", display_name: "Pisces"}
+  - {name: "Insects", scope: "Global", type: "Security", description: "Insects", display_name: "Insecta"}
+  - {name: "Arachnids", scope: "Global", type: "Security", description: "Arachnids", display_name: "Arachnida"}
+  - {name: "Crustaceans", scope: "Global", type: "Security", description: "Crustaceans", display_name: "Crustacea"}
+  - {name: "Mollusks", scope: "Global", type: "Security", description: "Mollusks", display_name: "Mollusca"}
+  - {name: "Echinoderms", scope: "Global", type: "Security", description: "Echinoderms", display_name: "Echinodermata"}
+  - {name: "Cnidarians", scope: "Global", type: "Security", description: "Cnidarians", display_name: "Cnidaria"}
+  - {name: "Aliens", scope: "Global", type: "Security", description: "Aliens", display_name: "Extraterrestrials"}
+  - {name: "Robots", scope: "Global", type: "Security", description: "Robots", display_name: "Automatons"}
+  - {name: "Virtual Intelligence", scope: "Global", type: "Security", description: "Virtual Intelligence", display_name: "Artificial Intelligence"}
+  - {name: "Titans", scope: "Global", type: "Security", description: "Titans", display_name: "Gigantes"}
+  - {name: "Witches", scope: "Global", type: "Security", description: "Witches", display_name: "Wicca"}
+  - {name: "Wizards", scope: "Global", type: "Security", description: "Wizards", display_name: "Magus"}
+  - {name: "Elves", scope: "Global", type: "Security", description: "Elves", display_name: "Elves"}
+  - {name: "Dwarves", scope: "Global", type: "Security", description: "Dwarves", display_name: "Dwarves"}
+  - {name: "Hobbits", scope: "Global", type: "Security", description: "Hobbits", display_name: "Halflings"}
+  - {name: "Dragons", scope: "Global", type: "Security", description: "Dragons", display_name: "Draconia"}
+  - {name: "Humans", scope: "Global", type: "Security", description: "Humans", display_name: "Homo Sapien"}

@@ -1,16 +1,16 @@
 #######################################################
 # 
 #   Author:     Ken Hillier
-#   Date:       05 Oct 23
+#   Date:       28 Oct 24
 # 
-#   Description:  Playbook that Provisions ONTAP Select's NFS, SMB, iSCSI LUNs & NVMe namespaces.
+#   Description:  Playbook that Provisions ONTAP NFS exports, SMB shares, iSCSI LUNs & NVMe namespaces.
 # 
 #   Dependencies:  
 # 
 #######################################################
 ---
-- name: NetApp ONTAP Select Provision NAS / SAN
-  hosts: ontapclusters
+- name: NetApp ONTAP Provision NAS / SAN
+  hosts: ontap
   gather_facts: false
   collections:
     - netapp.ontap
@@ -23,9 +23,7 @@
       validate_certs: false
       use_rest: always
   vars_files:
-    - ../vars/credentials.yml
-    # - ../vars/demo1_nfs_test.yml
-    # - ../vars/test130_nvme_test.yml
+    - ../vars/sandbox_prov_nas.yml
   # vars_prompt:
   #   - name: admin_username
   #     prompt: AD Domain admin account
@@ -36,7 +34,6 @@
   #     confirm: yes
   #     private: yes
   vars:
-    netapp_hostname: "{{ cluster_ip }}"
     vserver_name: vs0
 
   tasks:

@@ -27,7 +27,7 @@
   #   - ../vars/credentials.yml
 
   vars:
-    netapp_hostname: "{{ cluster_ip }}"
+    netapp_hostname: "{{ cluster.net.mgmt }}"
     https: true
     validate_certs: false
     state: present
@@ -39,13 +39,13 @@
       auto_provision_as: flexgroup
       protocol: nfs
       aggr_list:
-      - "{{ inventory_hostname }}_01_SSD_1"
-      - "{{ inventory_hostname }}_02_SSD_1"
-      - "{{ inventory_hostname }}_03_SSD_1"
-      - "{{ inventory_hostname }}_04_SSD_1"
+      - "{{ inventory_hostname }}_01_aggr_1"
+      - "{{ inventory_hostname }}_01_aggr_2"
+      - "{{ inventory_hostname }}_02_aggr_1"
+      - "{{ inventory_hostname }}_02_aggr_2"
       aggr_list_multiplier: 4
       analytics: true
-      tags: ["volume:flexgroup", "location:cpoc", "owner:apple"]
+      tags: ["volume:flexgroup", "location:ExampleLab", "owner:User1"]
 
   tasks:
 

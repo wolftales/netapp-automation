@@ -1,0 +1,107 @@
+volumes:
+- svm:                  "{{ vserver_name }}"
+  protocol:             nfs    # cifs, nfs or multi-protocol (concurrent cifs & NFS access)
+  # aggr:                 "{{ inventory_hostname }}_01_ssd_1"
+  aggr:
+  flexvol_name:         test_nfs_01
+  size:                 1
+  size_unit:            tb
+  # Optional parameters below
+  comment:                "This is DEV Test Volume"
+  # tags:                   "test"
+  # uid:                    0
+  # gid:                    0
+  unix_permissions:       0777
+  volume_security_style:  "unix"
+  percent_snapshot_space: 10
+- svm:                  "{{ vserver_name }}"
+  protocol:             nfs    # cifs, nfs or multi-protocol (concurrent cifs & NFS access)
+  # aggr:                 "{{ inventory_hostname }}_01_ssd_1"
+  aggr: 
+  flexvol_name:         test_nfs_02
+  size:                 10
+  # Optional parameters below
+  comment:                "This is DEV Test Volume"
+
+- svm:                  "{{ svm.name }}"
+  protocol:             nfs    # cifs, nfs or multi-protocol (concurrent cifs & NFS access)
+  aggr:                 aggr1
+  flexvol_name:         test_nfs_01
+  size:                 10
+  # Optional parameters below
+  comment:                "This is DEV Test Volume"
+  # tags:                   "test"
+  uid:                    0
+  gid:                    0
+  unix_permissions:       0777
+  volume_security_style:  "unix"
+  percent_snapshot_space: 10
+- svm:                  "{{ svm.name }}"
+  protocol:             nfs    # cifs, nfs or multi-protocol (concurrent cifs & NFS access)
+  aggr:                 aggr1
+  flexvol_name:         test_nfs_02
+  size:                 10
+  # Optional parameters below
+  comment:                "This is DEV Test Volume"
+  # tags:                   "test"
+  uid:                    0
+  gid:                    0
+  unix_permissions:       0777
+  volume_security_style:  "unix"
+  # percent_snapshot_space: 10
+
+cifs_shares:
+# - svm: 
+#   name: 
+#   comment: 
+#   # Optional parameters below
+#   junction_path: 
+#   allow_unencrypted: 
+#   browsable: 
+#   namespace_caching: 
+#   continuously_available: 
+#   encryption:               # Controls whether encryption must be used
+#   home_directory: 
+#   oplocks: 
+#   change_notify: 
+#   show_previous_versions: 
+#   show_snapshot: 
+#   unix_symlink:             # local, widelink or disable
+
+nfs_exports:
+- name:         default
+  svm:          vs0
+  rule_index:   1
+  client_match: ['10.61.102.251']
+  ro:           any
+  rw:           any
+  # Optional parameters below
+  protocol:     nfs
+  su:           any
+  anonymous:    0
+  suid:         true 
+  ntfs_unix_security: ignore
+- name:         default
+  svm:          vs0
+  rule_index:   2
+  client_match: ['10.61.102.0/24']
+  ro:           any
+  rw:           any
+  # Optional parameters below
+  protocol:     nfs
+  su:           any
+  anonymous:    0
+  suid:         false 
+  ntfs_unix_security: fail
+- name:         default
+  svm:          vs0
+  rule_index:   3
+  client_match: ['0.0.0.0/0']
+  ro:           any
+  rw:           none
+  # Optional parameters below
+  protocol:     nfs
+  su:           none
+  anonymous:    65534
+  suid:         false 
+  ntfs_unix_security: fail
