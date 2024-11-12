@@ -1,0 +1,7 @@
+---
+- name: Test Ansbile Playbook
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Test the connection
+      ping:
