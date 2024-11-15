@@ -1,5 +1,5 @@
 # Exclude List
-!add_ssh_publickey.yml
+!ontap/ssh_publickey/add_ssh_publickey.yml
 
 # Common credential, password and secrets files
 **/credentials.json
