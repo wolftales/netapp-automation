@@ -1,0 +1,64 @@
+---
+- hosts: localhost
+  name: SSH - Add Admin PublicKey
+  gather_facts: false
+  collections:
+    - netapp.ontap
+  
+  module_defaults:
+    group/netapp.ontap.netapp_ontap:
+      hostname: "{{ netapp_hostname }}"
+      username: "{{ netapp_username }}"
+      password: "{{ netapp_password }}"
+      https: true
+      validate_certs: false
+      use_rest: auto
+
+  # Varible precedence: vars < vars_prompts < vars_files
+  vars:
+    netapp_hostname:  192.168.7.200
+    netapp_username:  admin
+    vserver:          sandbox
+    state:            present
+    account:          admin
+    netapp_publickey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7EXAMPLEKEY user@example.com"
+  vars_prompt:
+    - name: "netapp_password"
+      prompt: "Enter the NetApp Admin Password"
+      private: yes
+  vars_files:
+    - vars_publickey.yml
+
+  tasks:
+ 
+  - name: 'Modify User: Admin'
+    netapp.ontap.na_ontap_user:
+      state:      "{{ state }}"
+      vserver:    "{{ vserver }}"
+      name:       "{{ account }}"
+      role_name:  "{{ role | default('admin') }}"
+      application_dicts:
+        - application: ssh
+          authentication_methods:
+            - password
+            - publickey
+        - application: console
+          authentication_methods:
+            - password
+        - application: http
+          authentication_methods:
+            - password
+        - application: ontapi
+          authentication_methods:
+            - password
+        - application: service_processor
+          authentication_methods:
+            - password
+  
+  - name: Create publickey
+    netapp.ontap.na_ontap_publickey:
+      state:      "{{ state }}"
+      vserver:    "{{ vserver }}"
+      account:    "{{ account }}"
+      public_key: "{{ netapp_publickey }}"
+

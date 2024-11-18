@@ -1,4 +1,5 @@
-# Exclude List
+# Exclude List for NetApp Ansible Playbooks
+!ontap/ssh_publickey
 !ontap/ssh_publickey/add_ssh_publickey.yml
 
 # Common credential, password and secrets files
