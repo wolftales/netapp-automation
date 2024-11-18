@@ -47,7 +47,7 @@ cifs_shares:
 #   name: 
 #   comment: 
 #   # Optional parameters below
-#   junction_path: 
+#   path: 
 #   allow_unencrypted: 
 #   browsable: 
 #   namespace_caching: 
@@ -59,6 +59,11 @@ cifs_shares:
 #   show_previous_versions: 
 #   show_snapshot: 
 #   unix_symlink:             # local, widelink or disable
+cifs_share_acls:
+# - svm:
+#   name:
+#   user_or_group:
+#   permission:
 nfs_exports:
 # - name:               # default
 #   svm:                # vs0

@@ -152,3 +152,4 @@ vservers:
       nfsv3: enabled
       nfsv4: enabled
       nfsv41: disabled
+      nfsv4_id_domain: example.local

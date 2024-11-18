@@ -23,7 +23,14 @@ domain_users:
   - {name: "smaug", first: "Smaug", sur: "The Magnificent", passwd: "FireBreath!", display_name: "Smaug The Magnificent", groups: ["Domain Users", "Dragons"]}
   - {name: "bilbo", first: "Bilbo", sur: "Baggins", passwd: "ChangeMe!", display_name: "Bilbo Baggins", groups: ["Domain Users", "Hobbits"]}
   - {name: "aragorn", first: "Aragorn", sur: "Son of Arathorn", passwd: "ChangeMe!", display_name: "Aragorn Son of Arathorn", groups: ["Domain Users", "Humans"]}
-
+  - {name: "gollum", first: "Gollum", sur: "Smeagol", passwd: "ChangeMe!", display_name: "Gollum Smeagol", groups: ["Domain Users", "Hobbits"]}
+  - {name: "sauron", first: "Sauron", sur: "The Deceiver", passwd: "ChangeMe!", display_name: "Sauron The Deceiver", groups: ["Domain Users", "Titans", "villains"]}
+  - {name: "saruman", first: "Saruman", sur: "The White", passwd: "ChangeMe!", display_name: "Saruman The White", groups: ["Domain Users", "Wizards", "villains"]}
+  - {name: "vader", first: "Darth", sur: "Vader", passwd: "ChangeMe!", display_name: "Darth Vader", groups: ["Domain Users", "Titans", "villains"]}
+  - {name: "skywalker", first: "Luke", sur: "Skywalker", passwd: "ChangeMe!", display_name: "Luke Skywalker", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "leia", first: "Princess Leia", sur: "Organa", passwd: "ChangeMe!", display_name: "Princess Leia Organa", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "han_solo", first: "Han", sur: "Solo", passwd: "ChangeMe!", display_name: "Han Solo", groups: ["Domain Users", "Humans", "Titans"]}
+  - {name: "chewie", first: "Chewbacca", sur: "of Kashyyyk", passwd: "ChangeMe!", display_name: "Chewbacca (Honored Warrior) of Kashyyyk the Co-Pilot", groups: ["Domain Users", "Titans"]}
 
 domain_groups:
   - {name: "Mammals", scope: "Global", type: "Security", description: "Mammals", display_name: "Mammalia"}
@@ -48,3 +55,4 @@ domain_groups:
   - {name: "Hobbits", scope: "Global", type: "Security", description: "Hobbits", display_name: "Halflings"}
   - {name: "Dragons", scope: "Global", type: "Security", description: "Dragons", display_name: "Draconia"}
   - {name: "Humans", scope: "Global", type: "Security", description: "Humans", display_name: "Homo Sapien"}
+  - {name: "villains", scope: "Global", type: "Security", description: "Villains", display_name: "Antagonists"}

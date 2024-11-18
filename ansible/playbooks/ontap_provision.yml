@@ -23,7 +23,7 @@
       validate_certs: false
       use_rest: always
   vars_files:
-    - ../vars/sandbox_prov_nas.yml
+    - ../vars/sandbox_vs0_cifs_test.yml
   # vars_prompt:
   #   - name: admin_username
   #     prompt: AD Domain admin account

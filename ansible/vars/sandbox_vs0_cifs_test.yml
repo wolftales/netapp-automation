@@ -1,0 +1,66 @@
+volumes:
+
+  - svm: "{{ vserver_name }}"
+    protocol:     cifs # cifs, nfs or multi-protocol (concurrent cifs & NFS access)
+    # aggr:                 "{{ inventory_hostname }}_01_aggr_2"
+    aggr:         # System / Inventory defined if left blank
+    flexvol_name: test_ntfs_01
+    size:         10
+    # Optional parameters below
+    volume_security_style: "ntfs"
+    comment: "This is DEV Test NTFS Volume"    
+
+cifs_shares:
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    path:           /test_ntfs_01
+    user_or_group:  "everyone"
+    permission:     "Read"
+    comment:        "This is DEV Test CIFS Share"
+    # Optional parameters below
+    # junction_path:  /test_ntfs_01
+    browsable:      true
+    namespace_caching: true # Controls whether namespace caching is enabled
+    oplocks:        true
+    change_notify:  true
+    show_previous_versions: true # Controls whether previous versions are shown
+    show_snapshot:  false # Interfers with ACL inheritance
+    unix_symlink:   local # local, widelink or disable
+
+cifs_share_acls:
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\administrator"
+    permission:     "full_control"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\optimus"
+    permission:     "full_control"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\gollum"
+    permission:     "no_access"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\vader"
+    permission:     "change"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\skywalker"
+    permission:     "read"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\leia"
+    permission:     "read"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\han_solo"
+    permission:     "no_access"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\chewie"
+    permission:     "change"
+  - svm:            "{{ vserver_name }}"
+    name:           cifs_01
+    user_or_group:  "EXAMPLE\\sauron"
+    permission:     "full_control"

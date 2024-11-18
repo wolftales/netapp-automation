@@ -12,7 +12,7 @@
     vserver:          "{{ item.svm }}"
   with_items: "{{ nfs_exports }}"
   when:
-  - nfs_exports is defined
+  - nfs_exports is defined and nfs_exports != None
   - item.protocol is search("nfs".lower()) or item.protocol is search("any".lower())
 - name: Provision NAS '{{ vserver_name }}' Setup export-policy rules
   netapp.ontap.na_ontap_export_policy_rule:
@@ -38,7 +38,7 @@
   with_items:
     "{{ nfs_exports }}"
   when:
-  - nfs_exports is defined
+  - nfs_exports is defined and nfs_exports != None
   - item.protocol is search("nfs".lower()) or item.protocol is search("any".lower())
 - name: Provision NAS '{{ vserver_name }}' Volume
   netapp.ontap.na_ontap_volume:
@@ -55,10 +55,11 @@
     size_unit:              "{{ item.size_unit              | default('gb') }}"
     size_change_threshold:  "{{ item.size_change_threshold  | default(10 | int) }}"
     junction_path:          "/{{ item.junction_path if item.junction_path is defined and not None else item.flexvol_name }}"
-    user_id:                "{{ item.uid                    | default(0 | int) }}"
-    group_id:               "{{ item.gid                    | default(0 | int) }}"
-    unix_permissions:       "{{ item.unix_permissions       | default('755') }}"
-    volume_security_style:  "{{ item.volume_security_style  | default('unix') }}"
+    user_id:                "{{ item.uid                    | default(omit) }}"
+    group_id:               "{{ item.gid                    | default(omit) }}"
+    unix_permissions:       "{{ item.unix_permissions       | default(omit) }}"
+    volume_security_style:  "{{ item.volume_security_style if item.volume_security_style is defined else ('ntfs' if item.protocol | lower == 'cifs' else 'unix') }}"
+    # volume_security_style:  "{{ item.volume_security_style  | default('unix') }}"
     analytics:              "{{ item.analytics              | default(omit) }}"
     percent_snapshot_space: "{{ item.percent_snapshot_space | default(5 | int) }}"
     snapshot_policy:        "{{ item.snapshot_policy        | default('default') }}"
@@ -79,6 +80,23 @@
     comment:                "{{ item.comment                | default(omit) }}"
   with_items:
     "{{ volumes }}"
+- name: Provision NAS '{{ vserver_name }}' Set Volume Security Style to NTFS
+  netapp.ontap.na_ontap_volume:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    name:                   "{{ item.flexvol_name }}"
+    volume_security_style:  "ntfs"
+  with_items:
+    "{{ volumes }}"
+  when:
+  - volumes is defined and volumes != None
+  - item.volume_security_style is defined or item.volume_security_style == None
+  - item.protocol is search("cifs".lower())
 - name: Provision NAS '{{ vserver_name }}' Volume Autosize
   netapp.ontap.na_ontap_volume_autosize:
     hostname:               "{{ netapp_hostname }}"
@@ -126,3 +144,20 @@
   - cifs_shares is defined and cifs_shares != None
   - item.name is defined
   # - item.protocol is search("cifs".lower())
+- name: Provision NAS '{{ vserver_name }}' CIFS Share ACLs
+  netapp.ontap.na_ontap_cifs_acl:
+    state:                  present
+    hostname:               "{{ netapp_hostname }}"
+    username:               "{{ netapp_username }}"
+    password:               "{{ netapp_password }}"
+    https:                  "{{ https }}"
+    validate_certs:         "{{ validate_certs }}"
+    vserver:                "{{ item.svm }}"
+    share_name:             "{{ item.name }}"
+    user_or_group:          "{{ item.user_or_group }}"
+    permission:             "{{ item.permission }}"
+  with_items:
+    "{{ cifs_share_acls }}"
+  when:
+  - cifs_share_acls is defined and cifs_share_acls != None
+  - item.name is defined
