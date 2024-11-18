@@ -1,6 +1,7 @@
 # Exclude List for NetApp Ansible Playbooks
 !ontap/ssh_publickey
 !ontap/ssh_publickey/add_ssh_publickey.yml
+!docs/ansible_encrypted_string_varible_passwords.md 
 
 # Common credential, password and secrets files
 **/credentials.json
